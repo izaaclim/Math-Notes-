@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MATH006 Algebra 2 — Flashcards</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg-secondary: #f5f5f3;
+    --bg-tertiary: #efefed;
+    --text-primary: #1a1a18;
+    --text-secondary: #6b6b67;
+    --text-tertiary: #9a9a95;
+    --border: rgba(0,0,0,0.12);
+    --border-strong: rgba(0,0,0,0.25);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a;
+      --bg-secondary: #252523;
+      --bg-tertiary: #2e2e2b;
+      --text-primary: #f0efe8;
+      --text-secondary: #9a9a95;
+      --text-tertiary: #6b6b67;
+      --border: rgba(255,255,255,0.1);
+      --border-strong: rgba(255,255,255,0.22);
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 2rem;
+  }
+  header h1 {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  header p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+    align-items: center;
+  }
+
+  select {
+    flex: 1;
+    min-width: 150px;
+    padding: 8px 10px;
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+  }
+  select:focus { border-color: #7F77DD; }
+
+  .progress {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  .score-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .score-badge {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 99px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 0.5px solid var(--border);
+  }
+  .score-badge span { font-weight: 500; color: var(--text-primary); }
+
+  /* Card flip */
+  .card-area {
+    perspective: 1200px;
+    margin: 0.5rem 0 1rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .card-inner {
+    position: relative;
+    width: 100%;
+    min-height: 230px;
+    transform-style: preserve-3d;
+    transition: transform 0.45s ease;
+  }
+  .card-inner.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute; top: 0; left: 0; right: 0;
+    min-height: 230px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  .card-back { transform: rotateY(180deg); }
+
+  .card-tag {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    padding: 3px 10px;
+    border-radius: 99px;
+    text-transform: uppercase;
+  }
+  .tag-theorem { background: #EEEDFE; color: #3C3489; }
+  .tag-lemma   { background: #E1F5EE; color: #085041; }
+  .tag-def     { background: #E6F1FB; color: #0C447C; }
+  .tag-prop    { background: #FAECE7; color: #712B13; }
+  .tag-cor     { background: #FAEEDA; color: #633806; }
+
+  @media (prefers-color-scheme: dark) {
+    .tag-theorem { background: #26215C; color: #CECBF6; }
+    .tag-lemma   { background: #04342C; color: #9FE1CB; }
+    .tag-def     { background: #042C53; color: #B5D4F4; }
+    .tag-prop    { background: #4A1B0C; color: #F5C4B3; }
+    .tag-cor     { background: #412402; color: #FAC775; }
+  }
+
+  .card-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .card-question {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: center;
+    line-height: 1.5;
+    max-width: 560px;
+  }
+  .card-hint {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+  .card-answer {
+    font-size: 14px;
+    color: var(--text-primary);
+    text-align: left;
+    line-height: 1.7;
+    max-width: 600px;
+    width: 100%;
+  }
+  .ans-label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .nav-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .nav-row button, .rate-btn {
+    flex: 1;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-family: inherit;
+    border-radius: var(--radius-md);
+    border: 0.5px solid var(--border-strong);
+    background: var(--bg);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .nav-row button:hover { background: var(--bg-secondary); }
+
+  .rate-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 0.75rem;
+    width: 100%;
+  }
+  .rate-btn.know  { border-color: #1D9E75; color: #085041; }
+  .rate-btn.learn { border-color: #BA7517; color: #633806; }
+  .rate-btn:hover { background: var(--bg-secondary); }
+
+  @media (prefers-color-scheme: dark) {
+    .rate-btn.know  { border-color: #5DCAA5; color: #9FE1CB; }
+    .rate-btn.learn { border-color: #EF9F27; color: #FAC775; }
+  }
+
+  .empty-msg {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+    font-size: 15px;
+    width: 100%;
+  }
+
+  footer {
+    margin-top: 2rem;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>MATH006 Algebra 2 — Flashcards</h1>
+    <p>48 cards · Definitions, Lemmas, Theorems, Propositions & Corollaries</p>
+  </header>
+
+  <div class="controls">
+    <select id="topicFilter">
+      <option value="all">All topics</option>
+      <option value="Number Theory">1. Number Theory</option>
+      <option value="Permutations">2. Permutations</option>
+      <option value="Groups">3. Groups</option>
+      <option value="Rings">4. Rings</option>
+      <option value="Vector Spaces">5. Vector Spaces</option>
+    </select>
+    <select id="typeFilter">
+      <option value="all">All types</option>
+      <option value="Definition">Definitions</option>
+      <option value="Lemma">Lemmas</option>
+      <option value="Theorem">Theorems</option>
+      <option value="Proposition">Propositions</option>
+      <option value="Corollary">Corollaries</option>
+    </select>
+    <select id="modeFilter">
+      <option value="all">All cards</option>
+      <option value="learn">Still learning</option>
+      <option value="know">Already know</option>
+    </select>
+    <div class="progress" id="progressLabel">Card 1 of 48</div>
+  </div>
+
+  <div class="score-row">
+    <div class="score-badge">Know: <span id="knowCount">0</span></div>
+    <div class="score-badge">Learning: <span id="learnCount">0</span></div>
+    <div class="score-badge">Unseen: <span id="unseenCount">48</span></div>
+  </div>
+
+  <div class="card-area" id="cardArea" onclick="flipCard()">
+    <div class="card-inner" id="cardInner">
+      <div class="card-face card-front">
+        <div class="card-tag" id="cardTag"></div>
+        <div class="card-label" id="cardLabel"></div>
+        <div class="card-question" id="cardQuestion"></div>
+        <div class="card-hint">Click to reveal answer</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-tag" id="cardTagBack"></div>
+        <div class="card-answer" id="cardAnswer"></div>
+        <div class="rate-row" onclick="event.stopPropagation()">
+          <button class="rate-btn know"  onclick="rate('know')">✓ Got it</button>
+          <button class="rate-btn learn" onclick="rate('learn')">↺ Still learning</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button onclick="prevCard()">← Previous</button>
+    <button onclick="shuffle()">Shuffle ↺</button>
+    <button onclick="nextCard()">Next →</button>
+  </div>
+
+  <footer>MATH006 Algebra 2 · Based on lecture notes by Ed Segal · 2025/26</footer>
+</div>
+
+<script>
+const ALL_CARDS = [
+  {topic:"Number Theory",type:"Lemma",name:"Euclid's Division Lemma",
+   q:"State Euclid's Division Lemma.",
+   a:"For any positive natural numbers n, m ∈ ℕ, there exist unique q, r ∈ ℕ such that n = qm + r with 0 ≤ r < m."},
+  {topic:"Number Theory",type:"Lemma",name:"GCD via division",
+   q:"If n = qm + r, how does this relate gcd(n, m) to a simpler gcd?",
+   a:"gcd(n, m) = gcd(m, r). The common divisors of n and m are exactly the common divisors of m and r."},
+  {topic:"Number Theory",type:"Lemma",name:"Bézout's Lemma",
+   q:"State Bézout's Lemma.",
+   a:"For n, m ∈ ℕ with g = gcd(n, m), there exist a, b ∈ ℤ such that na + mb = g."},
+  {topic:"Number Theory",type:"Theorem",name:"Bézout's Theorem",
+   q:"When does na + mb = l have a solution in integers a, b?",
+   a:"If and only if gcd(n, m) divides l. Proof: na + mb is always a multiple of g = gcd(n,m), so g | l is necessary; if g | l use Bézout's Lemma scaled by l/g."},
+  {topic:"Number Theory",type:"Lemma",name:"Prime divisor lemma",
+   q:"If p is prime and p | nm, what can you conclude?",
+   a:"Either p | n or p | m. Proof: if p ∤ n then gcd(p,n) = 1, so pa + nb = 1 for some a, b; multiplying by m gives pam + nmb = m, and since p divides both terms on the left, p | m."},
+  {topic:"Number Theory",type:"Theorem",name:"Fundamental Theorem of Arithmetic",
+   q:"State the Fundamental Theorem of Arithmetic.",
+   a:"Every n ∈ ℕ has a unique factorization into primes (up to reordering). Proved by induction: if p_t | n then p_t equals some q_i; cancel and apply induction hypothesis."},
+  {topic:"Number Theory",type:"Definition",name:"Congruence mod N",
+   q:"What does a ≡ b (mod N) mean?",
+   a:"a − b is a multiple of N, i.e. a = b + Nq for some q ∈ ℤ. The set ℤ/N consists of the N congruence classes 0̄, 1̄, …, N̄−1."},
+  {topic:"Number Theory",type:"Lemma",name:"Arithmetic of congruences",
+   q:"If a ≡ b and c ≡ d (mod N), what operations are preserved?",
+   a:"Addition, subtraction, and multiplication: a+c ≡ b+d, a−c ≡ b−d, ac ≡ bd (mod N). This makes +, −, × well-defined on ℤ/N."},
+  {topic:"Number Theory",type:"Lemma",name:"Invertibility in ℤ/N",
+   q:"When does ā × b̄ = 1̄ have a solution in ℤ/N?",
+   a:"If and only if gcd(a, N) = 1 (a is coprime to N). Proof: we need ab − Np = 1, which by Bézout's Theorem is solvable iff gcd(a, N) | 1."},
+  {topic:"Permutations",type:"Definition",name:"Symmetric group",
+   q:"What is Sₙ?",
+   a:"The set of all bijections σ : [1,n] → [1,n], called permutations of length n. It forms the symmetric group on n symbols under composition."},
+  {topic:"Permutations",type:"Proposition",name:"Cycle decomposition",
+   q:"How can any permutation be written uniquely?",
+   a:"As a composition of disjoint cycles. Use the orbit-tracing algorithm: start from the smallest unassigned element, trace its orbit to form a cycle, repeat."},
+  {topic:"Permutations",type:"Theorem",name:"Sign function existence & uniqueness",
+   q:"What two properties uniquely characterise sgn : Sₙ → {1, −1}?",
+   a:"(i) If σ is a 2-cycle then sgn(σ) = −1. (ii) sgn(σ∘τ) = sgn(σ)sgn(τ) for all σ, τ. These determine sgn uniquely: if σ is a product of N transpositions then sgn(σ) = (−1)^N."},
+  {topic:"Permutations",type:"Lemma",name:"Sign of a k-cycle",
+   q:"What is the sign of a k-cycle?",
+   a:"sgn(σ) = (−1)^(k−1). So sgn = 1 if k is odd, sgn = −1 if k is even. Proof: a k-cycle factors as k−1 transpositions via (a₁a₂…aₖ) = (a₁aₖ)∘…∘(a₁a₂)."},
+  {topic:"Permutations",type:"Corollary",name:"Sign from cycle type",
+   q:"If σ has cycle type k₁, k₂, …, kᵣ, what is sgn(σ)?",
+   a:"sgn(σ) = (−1)^(k₁+k₂+…+kᵣ−r). Each kᵢ-cycle contributes (−1)^(kᵢ−1) and the signs multiply."},
+  {topic:"Permutations",type:"Proposition",name:"Parity well-defined",
+   q:"If σ can be written as N transpositions and also as M transpositions, what must be true?",
+   a:"N and M have the same parity (both even or both odd). Proof: both give sgn(σ) = (−1)^N = (−1)^M."},
+  {topic:"Groups",type:"Definition",name:"Group axioms",
+   q:"State the three axioms for a group (G, ⋆).",
+   a:"(1) Associativity: (x⋆y)⋆z = x⋆(y⋆z). (2) Identity: ∃e ∈ G with x⋆e = e⋆x = x for all x. (3) Inverses: for all x ∃y with x⋆y = y⋆x = e. An abelian group additionally satisfies x⋆y = y⋆x."},
+  {topic:"Groups",type:"Lemma",name:"Uniqueness of identity",
+   q:"Why can a group have only one identity element?",
+   a:"If e' satisfies e'⋆x = x for all x, then e' = e'⋆e = e. Similarly for a right identity. So the identity is unique."},
+  {topic:"Groups",type:"Lemma",name:"Uniqueness of inverses",
+   q:"Why is the inverse of any group element unique?",
+   a:"If x⋆y' = e, consider y⋆(x⋆y') = y⋆e = y but also = (y⋆x)⋆y' = e⋆y' = y'. So y = y'. Similarly for left inverses."},
+  {topic:"Groups",type:"Definition",name:"Order of an element",
+   q:"Define the order of an element g in a group.",
+   a:"The smallest positive integer n such that gⁿ = e. If no such n exists, g has infinite order."},
+  {topic:"Groups",type:"Lemma",name:"Order bounded by group size",
+   q:"In a finite group of size n, what can you say about the order of any element?",
+   a:"ord(g) ≤ n. Proof: the n+1 elements e, g, g², …, gⁿ cannot all be distinct, so g^a = g^b for some a < b, giving g^(b−a) = e."},
+  {topic:"Groups",type:"Definition",name:"Cyclic group",
+   q:"What does it mean for a group to be cyclic?",
+   a:"There exists a generator g ∈ G such that every element equals gⁿ for some n ∈ ℤ. Cyclic groups are always abelian."},
+  {topic:"Groups",type:"Lemma",name:"Cyclic iff order = size",
+   q:"When is a finite group G of size n cyclic?",
+   a:"Exactly when G contains an element of order n. If such g exists, {e, g, …, g^(n−1)} are n distinct elements, so G = ⟨g⟩."},
+  {topic:"Groups",type:"Definition",name:"Group isomorphism",
+   q:"What is an isomorphism between groups (G₁, ⋆₁) and (G₂, ⋆₂)?",
+   a:"A bijection Ψ : G₁ → G₂ such that Ψ(g ⋆₁ h) = Ψ(g) ⋆₂ Ψ(h) for all g, h ∈ G₁."},
+  {topic:"Groups",type:"Proposition",name:"Classification of cyclic groups",
+   q:"Up to isomorphism, what are the cyclic groups?",
+   a:"A finite cyclic group of size N is isomorphic to ℤ/N. An infinite cyclic group is isomorphic to ℤ. Proof: send k̄ ↦ gᵏ (or k ↦ gᵏ in the infinite case)."},
+  {topic:"Groups",type:"Definition",name:"Subgroup",
+   q:"What conditions make a subset H ⊆ G a subgroup?",
+   a:"(1) H is closed under ⋆: x, y ∈ H ⟹ x⋆y ∈ H. (2) The identity e ∈ H. (3) H is closed under inverses: x ∈ H ⟹ x⁻¹ ∈ H."},
+  {topic:"Groups",type:"Proposition",name:"Subgroups of ℤ",
+   q:"What are all the subgroups of (ℤ, +)?",
+   a:"Exactly the sets nℤ = {nk : k ∈ ℤ} for n ∈ ℤ. Proof: take the smallest positive element n of H; then nℤ ⊆ H and division with remainder shows H ⊆ nℤ."},
+  {topic:"Groups",type:"Definition",name:"Coset",
+   q:"Define a (right) coset of a subgroup H in G.",
+   a:"H ⋆ g = {h ⋆ g : h ∈ H} for a fixed g ∈ G. Every element of G lies in exactly one coset (Lagrange v1)."},
+  {topic:"Groups",type:"Theorem",name:"Lagrange's Theorem",
+   q:"State Lagrange's Theorem for a finite group.",
+   a:"|G| = |H| × (number of cosets of H). In particular |H| divides |G|. Proof: cosets partition G and all cosets have the same size |H| via the bijection h ↦ h⋆g."},
+  {topic:"Groups",type:"Proposition",name:"Order divides group size",
+   q:"Why must the order of any element g in a finite group G divide |G|?",
+   a:"The subgroup ⟨g⟩ has size ord(g). By Lagrange's Theorem, ord(g) divides |G|."},
+  {topic:"Groups",type:"Theorem",name:"Fermat's Little Theorem",
+   q:"State Fermat's Little Theorem.",
+   a:"If p is prime and p ∤ a, then a^(p−1) ≡ 1 (mod p). Proof: (ℤ/p)* is a group of size p−1; ord(ā) = k divides p−1, so a^(p−1) = (aᵏ)^((p−1)/k) = 1."},
+  {topic:"Groups",type:"Definition",name:"Dihedral group",
+   q:"What is the dihedral group Dₙ?",
+   a:"The group of symmetries of a regular n-gon: Dₙ = {R_{2kπ/n}} ∪ {F_{2kπ/n}} ⊂ O(2), with n rotations and n reflections. |Dₙ| = 2n."},
+  {topic:"Rings",type:"Definition",name:"Ring axioms",
+   q:"State the axioms for a ring R.",
+   a:"(i) (R, +) is an abelian group. (ii) Multiplication is associative, commutative, with identity 1_R. (iii) Distributivity: r×(s+t) = r×s + r×t."},
+  {topic:"Rings",type:"Definition",name:"Units, irreducibles, zero divisors",
+   q:"Define: unit, irreducible element, zero divisor in a ring.",
+   a:"Unit: u with u×u' = 1_R for some u'. Irreducible: non-unit r where r = s×t implies s or t is a unit. Zero divisor: r ≠ 0 with r×s = 0 for some s ≠ 0. A ring with no zero divisors is an integral domain."},
+  {topic:"Rings",type:"Definition",name:"Field and UFD",
+   q:"What is a field? What is a UFD?",
+   a:"Field: every non-zero element is a unit (so division is possible). UFD (unique factorization domain): an integral domain where every non-zero non-unit factors into irreducibles, uniquely up to order and units."},
+  {topic:"Rings",type:"Lemma",name:"Division Lemma for polynomials",
+   q:"State the Division Lemma for polynomials.",
+   a:"For f, g ∈ R[X] with deg f ≥ deg g > 0, there exist unique q, r with f = qg + r and deg r < deg g (or r = 0). Proved by polynomial long division."},
+  {topic:"Rings",type:"Theorem",name:"R[X] is a UFD",
+   q:"Why is R[X] a unique factorization domain?",
+   a:"Existence: a non-irreducible factors into strictly smaller-degree pieces, so the process terminates. Uniqueness: follows from Bézout for polynomials + the same induction argument as for ℤ."},
+  {topic:"Rings",type:"Lemma",name:"Root-factor lemma",
+   q:"When is (X − α) a factor of f(X) ∈ K[X]?",
+   a:"Exactly when f(α) = 0. Proof: write f = q(X−α) + r by the Division Lemma; r is constant; substituting X = α gives r = f(α)."},
+  {topic:"Rings",type:"Theorem",name:"Fundamental Theorem of Algebra",
+   q:"State the Fundamental Theorem of Algebra and its key corollary.",
+   a:"Every f(X) ∈ ℂ[X] has at least one root (proved in Complex Analysis). Corollary: the only irreducibles in ℂ[X] are linear polynomials."},
+  {topic:"Rings",type:"Proposition",name:"Irreducibles in ℝ[X]",
+   q:"Can a real polynomial of degree ≥ 3 be irreducible?",
+   a:"No. If it has a real root, the root-factor lemma gives a factorisation. Otherwise it has a complex root α ∉ ℝ; then ᾱ is also a root, and the quadratic (X−α)(X−ᾱ) ∈ ℝ[X] divides f."},
+  {topic:"Vector Spaces",type:"Definition",name:"Vector space axioms",
+   q:"State the axioms for a (real) vector space V.",
+   a:"(i) (V,+) is an abelian group. (ii) λ₁(λ₂v) = (λ₁λ₂)v. (iii) 1·v = v. (iv) (λ₁+λ₂)v = λ₁v+λ₂v. (v) λ(v₁+v₂) = λv₁+λv₂, for all v,v₁,v₂ ∈ V and λ,λ₁,λ₂ ∈ ℝ."},
+  {topic:"Vector Spaces",type:"Definition",name:"Basis and dimension",
+   q:"What is a basis? How is dimension defined?",
+   a:"A finite basis for V is a finite subset S = {v₁,…,vₙ} that is linearly independent and spans V. The dimension dim V is the size of any basis — well-defined because all bases have the same size."},
+  {topic:"Vector Spaces",type:"Definition",name:"Linear map",
+   q:"What makes a function F : V → W linear?",
+   a:"F(v₁+v₂) = F(v₁)+F(v₂) and F(λv) = λF(v) for all v₁,v₂,v ∈ V and λ ∈ ℝ."},
+  {topic:"Vector Spaces",type:"Definition",name:"Kernel and image",
+   q:"Define the kernel and image of a linear map F : V → W.",
+   a:"Im F = {F(v) : v ∈ V} ⊆ W (image). Ker F = {v ∈ V : F(v) = 0_W} ⊆ V (kernel). F is injective if and only if Ker F = {0_V}."},
+  {topic:"Vector Spaces",type:"Theorem",name:"Rank-Nullity Theorem",
+   q:"State the Rank-Nullity Theorem.",
+   a:"For F : V → W between finite-dimensional vector spaces: rank F + null F = dim V. Proof: extend a basis of Ker F to a basis of V; the remaining images form a basis for Im F."},
+  {topic:"Vector Spaces",type:"Proposition",name:"Change of basis formula",
+   q:"If F is represented by M in bases S, T and by M' in bases S', T', how are M and M' related?",
+   a:"M' = Q⁻¹MP, where P is the change-of-basis matrix from S' to S and Q is the change-of-basis matrix from T' to T."},
+  {topic:"Vector Spaces",type:"Theorem",name:"Every finite-dim space ≅ ℝⁿ",
+   q:"What does the isomorphism theorem say about finite-dimensional vector spaces?",
+   a:"Every finite-dimensional vector space V of dimension n is isomorphic to ℝⁿ. The isomorphism is the coordinate map v ↦ [v]_S with respect to any chosen basis S."},
+  {topic:"Vector Spaces",type:"Theorem",name:"Size of a finite field",
+   q:"What are the possible sizes of a finite field K?",
+   a:"|K| = p^d for some prime p and d ∈ ℕ. Proof: 1_K has finite order p (prime) in (K,+), so K contains a copy of 𝔽_p; K is then a finite-dimensional 𝔽_p-vector space of dimension d."},
+  {topic:"Vector Spaces",type:"Proposition",name:"Subspace dimension",
+   q:"If U ≤ V is a subspace of a finite-dimensional vector space V, what can you say?",
+   a:"U is finite-dimensional, dim U ≤ dim V, and dim U = dim V implies U = V. Proof via the coordinate map, which sends U to a subspace of ℝⁿ."}
+];
+
+let deck = [...ALL_CARDS];
+let idx = 0;
+let flipped = false;
+let ratings = {};
+let activeFilter = { topic: 'all', type: 'all', mode: 'all' };
+
+function cardKey(c) { return c.topic + '|' + c.name; }
+
+function tagClass(type) {
+  if (type === 'Theorem')    return 'tag-theorem';
+  if (type === 'Lemma')      return 'tag-lemma';
+  if (type === 'Definition') return 'tag-def';
+  if (type === 'Proposition')return 'tag-prop';
+  return 'tag-cor';
+}
+
+function getFiltered() {
+  return ALL_CARDS.filter(c => {
+    if (activeFilter.topic !== 'all' && c.topic !== activeFilter.topic) return false;
+    if (activeFilter.type  !== 'all' && c.type  !== activeFilter.type)  return false;
+    if (activeFilter.mode === 'know'  && ratings[cardKey(c)] !== 'know')  return false;
+    if (activeFilter.mode === 'learn' && ratings[cardKey(c)] !== 'learn') return false;
+    return true;
+  });
+}
+
+function render() {
+  document.getElementById('cardInner').classList.remove('flipped');
+  flipped = false;
+
+  const know   = ALL_CARDS.filter(c => ratings[cardKey(c)] === 'know').length;
+  const learn  = ALL_CARDS.filter(c => ratings[cardKey(c)] === 'learn').length;
+  const unseen = ALL_CARDS.length - know - learn;
+  document.getElementById('knowCount').textContent   = know;
+  document.getElementById('learnCount').textContent  = learn;
+  document.getElementById('unseenCount').textContent = unseen;
+
+  if (deck.length === 0) {
+    document.getElementById('progressLabel').textContent = '0 cards';
+    document.getElementById('cardQuestion').textContent  = 'No cards match this filter.';
+    document.getElementById('cardLabel').textContent     = '';
+    document.getElementById('cardTag').textContent       = '';
+    document.getElementById('cardAnswer').innerHTML      = '';
+    return;
+  }
+
+  if (idx >= deck.length) idx = deck.length - 1;
+  if (idx < 0) idx = 0;
+
+  const c = deck[idx];
+  document.getElementById('progressLabel').textContent  = `Card ${idx + 1} of ${deck.length}`;
+
+  const tagEl = document.getElementById('cardTag');
+  tagEl.textContent = c.type;
+  tagEl.className   = 'card-tag ' + tagClass(c.type);
+
+  const tagBackEl = document.getElementById('cardTagBack');
+  tagBackEl.textContent = c.type;
+  tagBackEl.className   = 'card-tag ' + tagClass(c.type);
+
+  document.getElementById('cardLabel').textContent    = c.topic + ' — ' + c.name;
+  document.getElementById('cardQuestion').textContent = c.q;
+  document.getElementById('cardAnswer').innerHTML     = `<span class="ans-label">Answer</span>${c.a}`;
+}
+
+function flipCard() {
+  if (deck.length === 0) return;
+  flipped = !flipped;
+  document.getElementById('cardInner').classList.toggle('flipped', flipped);
+}
+
+function nextCard() { idx = (idx + 1) % deck.length; render(); }
+function prevCard() { idx = (idx - 1 + deck.length) % deck.length; render(); }
+
+function shuffle() {
+  deck = getFiltered();
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  idx = 0;
+  render();
+}
+
+function rate(val) {
+  if (deck.length === 0) return;
+  ratings[cardKey(deck[idx])] = val;
+  setTimeout(() => {
+    deck = getFiltered();
+    if (idx >= deck.length) idx = 0;
+    render();
+  }, 180);
+}
+
+function applyFilters() { deck = getFiltered(); idx = 0; render(); }
+
+document.getElementById('topicFilter').addEventListener('change', function() { activeFilter.topic = this.value; applyFilters(); });
+document.getElementById('typeFilter').addEventListener('change',  function() { activeFilter.type  = this.value; applyFilters(); });
+document.getElementById('modeFilter').addEventListener('change',  function() { activeFilter.mode  = this.value; applyFilters(); });
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight') nextCard();
+  if (e.key === 'ArrowLeft')  prevCard();
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+});
+
+render();
+</script>
+</body>
+</html>

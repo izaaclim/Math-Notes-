@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MATH0005 Algebra 1 — Flashcards</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<style>
+  :root {
+    --bg: #0f0f14;
+    --surface: #17171f;
+    --card-front: #1c1c28;
+    --card-back: #141420;
+    --accent: #7c6ef7;
+    --accent2: #f7c26e;
+    --accent3: #6ef7b8;
+    --text: #e8e8f0;
+    --muted: #888899;
+    --border: #2a2a38;
+    --tag-matrix: #7c6ef7;
+    --tag-subspace: #6ef7b8;
+    --tag-linear: #f7a26e;
+    --tag-eigen: #f76e8f;
+    --tag-ortho: #6ec8f7;
+    --tag-proof: #f7e26e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 10% 20%, rgba(124,110,247,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 30% at 90% 80%, rgba(110,247,184,0.06) 0%, transparent 60%);
+  }
+
+  /* ── Header ────────────────────────────────────────────────────────── */
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+    width: 100%;
+    max-width: 760px;
+  }
+
+  .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    opacity: 0.9;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent2);
+  }
+
+  .subtitle {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Filter bar ─────────────────────────────────────────────────────── */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 28px;
+    width: 100%;
+    max-width: 760px;
+  }
+
+  .filter-btn {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+
+  .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .filter-btn[data-topic="subspaces"].active { background: var(--tag-subspace); border-color: var(--tag-subspace); color: #0f0f14; }
+  .filter-btn[data-topic="linear"].active { background: var(--tag-linear); border-color: var(--tag-linear); color: #0f0f14; }
+  .filter-btn[data-topic="eigen"].active { background: var(--tag-eigen); border-color: var(--tag-eigen); color: #fff; }
+  .filter-btn[data-topic="ortho"].active { background: var(--tag-ortho); border-color: var(--tag-ortho); color: #0f0f14; }
+  .filter-btn[data-topic="proof"].active { background: var(--tag-proof); border-color: var(--tag-proof); color: #0f0f14; }
+
+  /* ── Progress bar ───────────────────────────────────────────────────── */
+  .progress-wrap {
+    width: 100%;
+    max-width: 760px;
+    margin-bottom: 20px;
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* ── Card ───────────────────────────────────────────────────────────── */
+  .card-container {
+    width: 100%;
+    max-width: 760px;
+    perspective: 1400px;
+    margin-bottom: 28px;
+  }
+
+  .card {
+    position: relative;
+    width: 100%;
+    min-height: 320px;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+    cursor: pointer;
+  }
+
+  .card.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    width: 100%;
+    min-height: 320px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 16px;
+    padding: 36px 40px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-front {
+    background: var(--card-front);
+    border: 1px solid var(--border);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .card-back {
+    background: var(--card-back);
+    border: 1px solid rgba(124,110,247,0.3);
+    transform: rotateY(180deg);
+    justify-content: flex-start;
+  }
+
+  /* Shimmer line on front */
+  .card-front::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.6;
+  }
+
+  .card-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-label::before, .card-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .card-front .card-label { width: 100%; }
+
+  .topic-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+
+  .tag-matrices { background: rgba(124,110,247,0.15); color: var(--tag-matrix); border: 1px solid rgba(124,110,247,0.3); }
+  .tag-subspaces { background: rgba(110,247,184,0.12); color: var(--tag-subspace); border: 1px solid rgba(110,247,184,0.3); }
+  .tag-linear { background: rgba(247,162,110,0.12); color: var(--tag-linear); border: 1px solid rgba(247,162,110,0.3); }
+  .tag-eigen { background: rgba(247,110,143,0.12); color: var(--tag-eigen); border: 1px solid rgba(247,110,143,0.3); }
+  .tag-ortho { background: rgba(110,200,247,0.12); color: var(--tag-ortho); border: 1px solid rgba(110,200,247,0.3); }
+  .tag-proof { background: rgba(247,226,110,0.12); color: var(--tag-proof); border: 1px solid rgba(247,226,110,0.3); }
+
+  .question-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(16px, 2.5vw, 22px);
+    line-height: 1.5;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .card-back .answer-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .answer-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #c8c8e0;
+    font-weight: 300;
+  }
+
+  .answer-text .highlight {
+    color: var(--accent2);
+    font-weight: 500;
+  }
+
+  .answer-text .formula {
+    display: block;
+    text-align: center;
+    margin: 12px 0;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    border-left: 2px solid var(--accent);
+    font-size: 15px;
+  }
+
+  .hint {
+    margin-top: auto;
+    padding-top: 12px;
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+    border-top: 1px solid var(--border);
+  }
+
+  .flip-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 20px;
+    font-style: italic;
+  }
+
+  /* ── Controls ───────────────────────────────────────────────────────── */
+  .controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 760px;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+
+  .btn:hover { background: #22222e; border-color: var(--accent); }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-correct {
+    background: rgba(110,247,184,0.08);
+    border-color: rgba(110,247,184,0.3);
+    color: var(--accent3);
+  }
+  .btn-correct:hover { background: rgba(110,247,184,0.15); }
+
+  .btn-wrong {
+    background: rgba(247,110,143,0.08);
+    border-color: rgba(247,110,143,0.3);
+    color: var(--tag-eigen);
+  }
+  .btn-wrong:hover { background: rgba(247,110,143,0.15); }
+
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .btn-primary:hover { background: #6a5ce6; border-color: #6a5ce6; }
+
+  /* ── Score panel ────────────────────────────────────────────────────── */
+  .score-panel {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .score-item {
+    text-align: center;
+  }
+
+  .score-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  .score-num.correct { color: var(--accent3); }
+  .score-num.wrong { color: var(--tag-eigen); }
+  .score-num.remaining { color: var(--accent); }
+
+  .score-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* ── Empty state ────────────────────────────────────────────────────── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .empty-state .big { font-size: 48px; margin-bottom: 12px; }
+
+  /* ── Keyboard hint ──────────────────────────────────────────────────── */
+  .keyboard-hint {
+    margin-top: 24px;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .key {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+  }
+
+  /* ── Animations ─────────────────────────────────────────────────────── */
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-container { animation: slideIn 0.4s ease; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">MATH0005 · Algebra 1</div>
+  <h1>Flashcard <em>Revision</em></h1>
+  <div class="subtitle">51 cards · 6 topics · tap to reveal</div>
+</header>
+
+<!-- Filter bar -->
+<div class="filter-bar">
+  <button class="filter-btn active" data-topic="all" onclick="setFilter('all',this)">All cards</button>
+  <button class="filter-btn" data-topic="matrices" onclick="setFilter('matrices',this)">Matrices &amp; Systems</button>
+  <button class="filter-btn" data-topic="subspaces" onclick="setFilter('subspaces',this)">Subspaces &amp; Dimension</button>
+  <button class="filter-btn" data-topic="linear" onclick="setFilter('linear',this)">Linear Maps</button>
+  <button class="filter-btn" data-topic="eigen" onclick="setFilter('eigen',this)">Eigenvalues &amp; Det.</button>
+  <button class="filter-btn" data-topic="ortho" onclick="setFilter('ortho',this)">Orthogonality</button>
+  <button class="filter-btn" data-topic="proof" onclick="setFilter('proof',this)">★ Proofs</button>
+</div>
+
+<!-- Progress -->
+<div class="progress-wrap">
+  <div class="progress-meta">
+    <span id="progress-label">Card 1 of 50</span>
+    <span id="progress-pct">0%</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+</div>
+
+<!-- Card -->
+<div class="card-container">
+  <div class="card" id="card" onclick="flipCard()">
+    <div class="card-face card-front" id="card-front"></div>
+    <div class="card-face card-back" id="card-back"></div>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls" id="controls">
+  <button class="btn btn-wrong" onclick="markWrong()">✗ Still learning</button>
+  <button class="btn btn-primary" onclick="nextCard()">→ Skip</button>
+  <button class="btn btn-correct" onclick="markCorrect()">✓ Got it</button>
+</div>
+
+<div class="score-panel">
+  <div class="score-item">
+    <div class="score-num correct" id="score-correct">0</div>
+    <div class="score-label">Got it</div>
+  </div>
+  <div class="score-item">
+    <div class="score-num remaining" id="score-remaining">50</div>
+    <div class="score-label">Remaining</div>
+  </div>
+  <div class="score-item">
+    <div class="score-num wrong" id="score-wrong">0</div>
+    <div class="score-label">Learning</div>
+  </div>
+</div>
+
+<div class="keyboard-hint">
+  <span><span class="key">Space</span> flip card</span>
+  <span><span class="key">→</span> next</span>
+  <span><span class="key">1</span> got it</span>
+  <span><span class="key">2</span> still learning</span>
+  <span><span class="key">R</span> restart</span>
+</div>
+
+<script>
+const ALL_CARDS = [
+  // ── MATRICES & SYSTEMS ─────────────────────────────────────────────────
+  {
+    topic: "matrices",
+    q: "What is an \\(m \\times n\\) matrix, and what are its row vectors and column vectors?",
+    a: "An \\(m \\times n\\) matrix is a rectangular grid of numbers with \\(m\\) rows and \\(n\\) columns. A <span class='highlight'>row vector</span> is a \\(1 \\times n\\) matrix; a <span class='highlight'>column vector</span> is an \\(m \\times 1\\) matrix. The \\((i,j)\\) entry is in row \\(i\\), column \\(j\\).",
+  },
+  {
+    topic: "matrices",
+    q: "State the column decomposition: how do you express \\(Ax\\) in terms of the columns of \\(A\\)?",
+    a: "If \\(c_1,\\ldots,c_n\\) are the columns of \\(A\\) and \\(x = (x_1,\\ldots,x_n)^T\\), then <span class='formula'>\\(Ax = \\sum_{k=1}^n x_k c_k\\)</span> so \\(Ax\\) is a <span class='highlight'>linear combination of the columns</span> of \\(A\\) with coefficients \\(x_k\\).",
+  },
+  {
+    topic: "matrices",
+    q: "What is \\(Ae_j\\)?",
+    a: "<span class='formula'>\\(Ae_j = \\text{the }j\\text{th column of }A\\)</span> where \\(e_j\\) is the \\(j\\)th standard basis vector.",
+    hint: "Follows from the column decomposition with \\(x = e_j\\)."
+  },
+  {
+    topic: "matrices",
+    q: "What is the transpose \\(A^T\\) and what are its key identities?",
+    a: "\\((A^T)_{ij} = a_{ji}\\). Key identities: <span class='formula'>\\((A+B)^T = A^T+B^T, \\quad (AB)^T = B^T A^T, \\quad (A^T)^T = A\\)</span>",
+  },
+  {
+    topic: "matrices",
+    q: "What are the three elementary row operations?",
+    a: "<span class='highlight'>1.</span> Multiply row \\(i\\) by a non-zero scalar \\(\\lambda\\).<br><br><span class='highlight'>2.</span> Add \\(\\lambda\\) times row \\(j\\) to row \\(i\\) (\\(i \\neq j\\)).<br><br><span class='highlight'>3.</span> Swap rows \\(i\\) and \\(j\\).",
+    hint: "If \\(r\\) is a row operation then \\(r(A) = r(I_n)A\\)."
+  },
+  {
+    topic: "matrices",
+    q: "Define Row Reduced Echelon Form (RREF). What are pivot and free variables?",
+    a: "A matrix is in RREF if: (1) zero rows at bottom; (2) leading entry in each non-zero row is 1; (3) each leading entry is the only non-zero in its column; (4) leading entries move right going down.<br><br><span class='highlight'>Pivot variable</span>: in a column with a leading entry. <span class='highlight'>Free variable</span>: all others.",
+  },
+  {
+    topic: "matrices",
+    q: "When does \\(Ax = b\\) have no solution, a unique solution, or infinitely many solutions?",
+    a: "After row-reducing \\([A\\,|\\,b]\\) to RREF:<br><br><span class='highlight'>No solution</span>: a row \\([0\\cdots 0\\,|\\,c]\\) with \\(c \\neq 0\\).<br><br><span class='highlight'>Unique</span>: no inconsistency and no free variables.<br><br><span class='highlight'>Infinitely many</span>: no inconsistency and at least one free variable.",
+  },
+  {
+    topic: "matrices",
+    q: "What are fundamental solutions and why are they important?",
+    a: "Fundamental solutions of \\(Ax=0\\): for each free variable, set that variable to 1 and all other free variables to 0, then solve.<br><br><span class='highlight'>Theorem:</span> the fundamental solutions form a <span class='highlight'>basis</span> for \\(N(A)\\).",
+  },
+  {
+    topic: "matrices",
+    q: "How do you compute \\(A^{-1}\\) using RREF?",
+    a: "Form the augmented matrix \\([A\\,|\\,I_n]\\) and row-reduce. If \\(A\\) reduces to \\(I_n\\), the right block becomes \\(A^{-1}\\): <span class='formula'>\\([A\\,|\\,I_n] \\xrightarrow{\\text{RREF}} [I_n\\,|\\,A^{-1}]\\)</span> If \\(A\\) does not reduce to \\(I_n\\), it is not invertible.",
+  },
+  {
+    topic: "matrices",
+    q: "State all equivalent conditions for an \\(n \\times n\\) matrix \\(A\\) to be invertible.",
+    a: "The following are equivalent: <span class='highlight'>(a)</span> \\(A\\) invertible &nbsp; <span class='highlight'>(b)</span> \\(A^T\\) invertible &nbsp; <span class='highlight'>(c)</span> \\(Ax=0\\) has only \\(x=0\\) &nbsp; <span class='highlight'>(d)</span> row ops take \\(A\\) to \\(I_n\\) &nbsp; <span class='highlight'>(e)</span> \\(\\det A \\neq 0\\) &nbsp; <span class='highlight'>(f)</span> columns of \\(A\\) are linearly independent &nbsp; <span class='highlight'>(g)</span> \\(\\dim C(A) = n\\)",
+  },
+
+  // ── SUBSPACES & DIMENSION ──────────────────────────────────────────────
+  {
+    topic: "subspaces",
+    q: "Define a subspace of \\(\\mathbb{R}^n\\). What are the three conditions?",
+    a: "A non-empty subset \\(U \\subseteq \\mathbb{R}^n\\) is a <span class='highlight'>subspace</span> \\((U \\leqslant \\mathbb{R}^n)\\) if:<br><br>1. \\(0 \\in U\\)<br>2. \\(u,v \\in U \\Rightarrow u+v \\in U\\)<br>3. \\(u \\in U,\\, \\lambda \\in \\mathbb{R} \\Rightarrow \\lambda u \\in U\\)",
+  },
+  {
+    topic: "subspaces",
+    q: "Define the column space \\(C(A)\\), row space \\(C(A^T)\\), and kernel \\(N(A)\\).",
+    a: "<span class='highlight'>Column space:</span> \\(C(A) = \\{Av : v \\in \\mathbb{R}^n\\}\\) — span of columns, subspace of \\(\\mathbb{R}^m\\).<br><br><span class='highlight'>Row space:</span> \\(C(A^T)\\) — span of rows, subspace of \\(\\mathbb{R}^n\\).<br><br><span class='highlight'>Kernel:</span> \\(N(A) = \\{x \\in \\mathbb{R}^n : Ax = 0\\}\\) — subspace of \\(\\mathbb{R}^n\\).",
+  },
+  {
+    topic: "subspaces",
+    q: "Define: linear combination, span, linearly independent, basis, dimension.",
+    a: "<span class='highlight'>Linear combination:</span> \\(a_1v_1 + \\cdots + a_kv_k\\).<br><span class='highlight'>Span:</span> set of all linear combinations.<br><span class='highlight'>Lin. independent:</span> \\(\\sum a_iv_i = 0 \\Rightarrow\\) all \\(a_i = 0\\).<br><span class='highlight'>Basis:</span> linearly independent spanning sequence.<br><span class='highlight'>Dimension:</span> size of any basis (well-defined by Steinitz).",
+  },
+  {
+    topic: "subspaces",
+    q: "State the Extension Lemma.",
+    a: "If \\(v_1,\\ldots,v_k\\) is linearly independent and \\(v \\notin \\operatorname{span}(v_1,\\ldots,v_k)\\), then <span class='formula'>\\(v_1,\\ldots,v_k,\\, v \\text{ is linearly independent.}\\)</span>",
+    hint: "Proof: if \\(\\sum a_iv_i + av = 0\\) with \\(a \\neq 0\\), then \\(v \\in \\operatorname{span}(v_i)\\), contradiction."
+  },
+  {
+    topic: "subspaces",
+    q: "State the Steinitz Exchange Lemma and its corollary.",
+    a: "<span class='highlight'>Steinitz:</span> If a subspace contains a spanning sequence of length \\(m\\), then every sequence of length \\(> m\\) in that subspace is linearly dependent.<br><br><span class='highlight'>Corollary:</span> Any two bases of a subspace have the same size.",
+  },
+  {
+    topic: "subspaces",
+    q: "State the Rank-Nullity Theorem.",
+    a: "For any \\(m \\times n\\) matrix \\(A\\): <span class='formula'>\\(\\dim C(A) + \\dim N(A) = n\\)</span> Equivalently: \\(\\text{rank}(A) + \\text{nullity}(A) = n\\) (number of <em>columns</em>).",
+  },
+  {
+    topic: "subspaces",
+    q: "State the theorem on dimensions of subspaces.",
+    a: "Let \\(U \\leqslant V \\leqslant \\mathbb{R}^n\\). Then:<br><br>(a) \\(\\dim U \\leqslant \\dim V\\)<br><br>(b) \\(\\dim U = \\dim V \\Rightarrow U = V\\)",
+  },
+  {
+    topic: "subspaces",
+    q: "State the dimension formula for the sum of two subspaces.",
+    a: "For subspaces \\(S, T \\leqslant \\mathbb{R}^n\\): <span class='formula'>\\(\\dim(S+T) = \\dim S + \\dim T - \\dim(S \\cap T)\\)</span>",
+    hint: "Analogous to the inclusion-exclusion formula."
+  },
+  {
+    topic: "subspaces",
+    q: "Column rank equals row rank. What does this mean?",
+    a: "For any matrix \\(A\\): <span class='formula'>\\(\\dim C(A) = \\dim C(A^T)\\)</span> i.e.\ the number of linearly independent columns equals the number of linearly independent rows.",
+  },
+  {
+    topic: "subspaces",
+    q: "How do you find a basis for \\(C(A)\\) using RREF?",
+    a: "Row-reduce \\(A\\) to RREF. The columns of the <span class='highlight'>original matrix</span> \\(A\\) that correspond to <span class='highlight'>pivot columns</span> in the RREF form a basis for \\(C(A)\\).",
+    hint: "Do NOT use the columns of the RREF matrix — use the original columns."
+  },
+  {
+    topic: "subspaces",
+    q: "How do row operations affect the row space \\(C(A^T)\\), and how do you find a basis for it using RREF?",
+    a: "<span class='highlight'>Fact 1:</span> Row operations preserve the row space. If \\(B\\) is obtained from \\(A\\) by row operations, then <span class='formula'>\\(C(A^T) = C(B^T)\\)</span> <span class='highlight'>Fact 2:</span> If \\(R\\) is in RREF, the <span class='highlight'>non-zero rows</span> of \\(R\\) (equivalently, the non-zero columns of \\(R^T\\)) form a basis for \\(C(R^T)\\).<br><br><span class='highlight'>Method:</span> Row-reduce \\(A\\) to RREF \\(R\\). The non-zero rows of \\(R\\) are a basis for \\(C(A^T)\\).",
+    hint: "Contrast with C(A): for the column space you take pivot columns of the ORIGINAL matrix; for the row space you take non-zero rows of the RREF."
+  },
+
+  // ── LINEAR MAPS ─────────────────────────────────────────────────────────
+  {
+    topic: "linear",
+    q: "Define a linear map. What is the key representation theorem?",
+    a: "\\(T:\\mathbb{R}^n \\to \\mathbb{R}^m\\) is <span class='highlight'>linear</span> if \\(T(u+v)=T(u)+T(v)\\) and \\(T(\\lambda u)=\\lambda T(u)\\).<br><br><span class='highlight'>Theorem:</span> Every linear map is given by multiplication by the matrix <span class='formula'>\\(A = \\bigl[T(e_1)\\;\\cdots\\;T(e_n)\\bigr]\\)</span>",
+  },
+  {
+    topic: "linear",
+    q: "Define the kernel and image of a linear map \\(T: \\mathbb{R}^n \\to \\mathbb{R}^m\\).",
+    a: "<span class='highlight'>Kernel:</span> \\(\\ker T = \\{x \\in \\mathbb{R}^n : T(x) = 0\\}\\)<br><br><span class='highlight'>Image:</span> \\(\\operatorname{im} T = \\{T(x) : x \\in \\mathbb{R}^n\\}\\)<br><br>For \\(T_A\\): \\(\\ker T_A = N(A)\\) and \\(\\operatorname{im} T_A = C(A)\\).<br><br>\\(T\\) is injective \\(\\iff \\ker T = \\{0\\}\\).",
+  },
+  {
+    topic: "linear",
+    q: "Define the coordinate vector \\([v]_B\\) and how to compute it.",
+    a: "If \\(B = b_1,\\ldots,b_n\\) is a basis and \\(v = \\sum a_i b_i\\), then <span class='formula'>\\([v]_B = (a_1,\\ldots,a_n)^T\\)</span> <span class='highlight'>Computation:</span> if \\(P\\) is the change of basis matrix (columns \\(b_1,\\ldots,b_n\\)), then \\([v]_B = P^{-1}v\\).",
+  },
+  {
+    topic: "linear",
+    q: "State the Change of Basis Theorem.",
+    a: "Let \\(A\\) be \\(m \\times n\\), \\(B\\) a basis of \\(\\mathbb{C}^n\\) with change of basis matrix \\(P\\), and \\(C\\) a basis of \\(\\mathbb{C}^m\\) with change of basis matrix \\(Q\\). Then: <span class='formula'>\\(\\bigl[[Ab_1]_C \\cdots [Ab_n]_C\\bigr] = Q^{-1}AP\\)</span> Special case (\\(B = C\\), square): \\(P^{-1}AP\\) represents \\(T_A\\) in basis \\(B\\).",
+  },
+  {
+    topic: "linear",
+    q: "State and prove: \\((P^{-1}AP)^n = P^{-1}A^nP\\).",
+    a: "<span class='highlight'>Proof by induction.</span> Base \\(n=0\\): both equal \\(I\\). Inductive step: <span class='formula'>\\((P^{-1}AP)^{k+1} = (P^{-1}A^kP)(P^{-1}AP) = P^{-1}A^{k+1}P\\)</span> <span class='highlight'>Use:</span> if \\(A\\) diagonalises as \\(P^{-1}AP = D\\), then \\(A^n = PD^nP^{-1}\\).",
+  },
+
+  // ── EIGENVALUES & DETERMINANTS ─────────────────────────────────────────
+  {
+    topic: "eigen",
+    q: "Define: eigenvector, eigenvalue, eigenspace.",
+    a: "For a square matrix \\(A\\):<br><br><span class='highlight'>Eigenvector:</span> non-zero \\(v\\) with \\(Av = \\lambda v\\) for some \\(\\lambda\\).<br><br><span class='highlight'>Eigenvalue:</span> the scalar \\(\\lambda\\).<br><br><span class='highlight'>Eigenspace:</span> \\(E_\\lambda(A) = N(\\lambda I_n - A)\\).",
+  },
+  {
+    topic: "eigen",
+    q: "Define the characteristic polynomial \\(c_A(t)\\) and state its key theorem.",
+    a: "<span class='formula'>\\(c_A(t) = \\det(tI_n - A)\\)</span> This is a monic degree-\\(n\\) polynomial.<br><br><span class='highlight'>Theorem:</span> \\(\\lambda\\) is an eigenvalue of \\(A\\) \\(\\iff c_A(\\lambda) = 0\\).",
+  },
+  {
+    topic: "eigen",
+    q: "Give the formulas for \\(2 \\times 2\\) and \\(3 \\times 3\\) determinants.",
+    a: "<span class='formula'>\\(\\det\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix} = ad - bc\\)</span> For \\(3 \\times 3\\) (Sarrus): <span class='formula'>\\(a_{11}a_{22}a_{33}+a_{12}a_{23}a_{31}+a_{13}a_{21}a_{32}\\)<br>\\(-a_{11}a_{23}a_{32}-a_{12}a_{21}a_{33}-a_{13}a_{22}a_{31}\\)</span>",
+  },
+  {
+    topic: "eigen",
+    q: "What is \\(\\det A\\) for a triangular matrix? State the key determinant properties.",
+    a: "<span class='highlight'>Triangular:</span> \\(\\det A = a_{11}a_{22}\\cdots a_{nn}\\) (product of diagonal entries).<br><br><span class='highlight'>Properties:</span> (a) \\(\\det A \\neq 0 \\iff A\\) invertible &nbsp; (b) \\(\\det(AB) = \\det A \\cdot \\det B\\) &nbsp; (c) \\(\\det I_n = 1\\)<br><br>Row ops: scale row \\(\\to\\) det scales; add multiple \\(\\to\\) det unchanged; swap \\(\\to\\) det negates.",
+  },
+  {
+    topic: "eigen",
+    q: "Define diagonalisable. When is an \\(n \\times n\\) matrix diagonalisable over \\(\\mathbb{R}\\)?",
+    a: "\\(A\\) is <span class='highlight'>diagonalisable over \\(\\mathbb{R}\\)</span> if \\(\\exists\\) invertible \\(P\\), diagonal \\(D\\) with \\(P^{-1}AP = D\\).<br><br>Equivalent: \\(\\exists\\) a basis of \\(\\mathbb{R}^n\\) consisting of eigenvectors of \\(A\\).<br><br><span class='highlight'>Criterion:</span> \\(\\sum_i \\dim E_{\\lambda_i}(A) = n\\) (sum over distinct eigenvalues).",
+  },
+  {
+    topic: "eigen",
+    q: "If \\(A\\) has \\(n\\) distinct real eigenvalues, what can you conclude?",
+    a: "\\(A\\) is <span class='highlight'>diagonalisable over \\(\\mathbb{R}\\)</span>.<br><br>This follows because eigenvectors with distinct eigenvalues are linearly independent, giving \\(n\\) independent eigenvectors — enough for a basis.",
+  },
+  {
+    topic: "eigen",
+    q: "If \\(A\\) has a unique eigenvalue \\(\\lambda\\), when is it diagonalisable?",
+    a: "\\(A\\) is diagonalisable \\(\\iff A = \\lambda I_n\\).<br><br><span class='highlight'>Proof sketch:</span> if diagonalisable, \\(P^{-1}AP = D\\). Since \\(\\lambda\\) is the only eigenvalue, \\(D = \\lambda I_n\\), so \\(A = P(\\lambda I_n)P^{-1} = \\lambda I_n\\).",
+  },
+  {
+    topic: "eigen",
+    q: "Describe the procedure to diagonalise a matrix \\(A\\).",
+    a: "1. Compute \\(c_A(t) = \\det(tI-A)\\); find eigenvalues (roots).<br><br>2. For each eigenvalue \\(\\lambda\\), find a basis of \\(E_\\lambda(A) = N(\\lambda I - A)\\).<br><br>3. If total eigenvectors \\(= n\\): diagonalisable. Let \\(P\\) have these as columns.<br><br>4. \\(D = \\text{diag}(\\lambda_1,\\ldots,\\lambda_n)\\) matching columns of \\(P\\). Then \\(P^{-1}AP = D\\).",
+  },
+  {
+    topic: "eigen",
+    q: "How do you use diagonalisation to compute \\(A^n\\)?",
+    a: "If \\(P^{-1}AP = D\\), then \\(A = PDP^{-1}\\), so:<br><span class='formula'>\\(A^n = PD^nP^{-1}\\)</span> where \\(D^n = \\text{diag}(\\lambda_1^n,\\ldots,\\lambda_k^n)\\) is trivial to compute.",
+  },
+
+  // ── ORTHOGONALITY ──────────────────────────────────────────────────────
+  {
+    topic: "ortho",
+    q: "Define the dot product and length for \\(u,v \\in \\mathbb{R}^n\\).",
+    a: "<span class='formula'>\\(u \\cdot v = u^T v = \\sum_{i=1}^n u_i v_i, \\qquad \\|u\\| = \\sqrt{u \\cdot u}\\)</span> Properties: \\(u \\cdot u \\geqslant 0\\) (\\(= 0 \\iff u = 0\\)); bilinear; \\(u \\cdot v = v \\cdot u\\).",
+  },
+  {
+    topic: "ortho",
+    q: "State the Cauchy–Schwarz inequality and the angle formula.",
+    a: "<span class='highlight'>Cauchy–Schwarz:</span> <span class='formula'>\\(|u \\cdot v| \\leqslant \\|u\\|\\,\\|v\\|\\)</span> <span class='highlight'>Angle formula:</span> <span class='formula'>\\(\\cos\\theta = \\frac{u \\cdot v}{\\|u\\|\\,\\|v\\|}\\)</span>",
+  },
+  {
+    topic: "ortho",
+    q: "Define orthogonal, orthonormal, and orthonormal basis.",
+    a: "<span class='highlight'>Orthogonal:</span> \\(u \\cdot v = 0\\).<br><span class='highlight'>Orthogonal sequence:</span> \\(v_i \\cdot v_j = 0\\) for \\(i \\neq j\\).<br><span class='highlight'>Orthonormal sequence:</span> orthogonal and \\(\\|v_i\\| = 1\\) for all \\(i\\).<br><span class='highlight'>Orthonormal basis:</span> a basis that is also orthonormal.",
+  },
+  {
+    topic: "ortho",
+    q: "What is the coordinate vector with respect to an orthonormal basis?",
+    a: "If \\(C = c_1,\\ldots,c_n\\) is an <span class='highlight'>orthonormal</span> basis, then: <span class='formula'>\\([v]_C = \\begin{pmatrix}c_1 \\cdot v \\\\ \\vdots \\\\ c_n \\cdot v\\end{pmatrix}\\)</span> (No matrix inversion needed — just take dot products!)",
+  },
+  {
+    topic: "ortho",
+    q: "Define the projection of \\(v\\) onto \\(u\\), and state its key property.",
+    a: "<span class='formula'>\\(\\operatorname{proj}_u(v) = \\frac{v \\cdot u}{\\|u\\|^2}\\,u\\)</span> Key property: \\(v - \\operatorname{proj}_u(v)\\) is <span class='highlight'>orthogonal</span> to \\(u\\). This is the geometric foundation of Gram–Schmidt.",
+  },
+  {
+    topic: "ortho",
+    q: "State the Gram–Schmidt orthogonalisation procedure.",
+    a: "Given \\(b_1,\\ldots,b_n\\) (lin.\ independent), define: <span class='formula'>\\(v_1 = b_1\\)<br>\\(v_k = b_k - \\sum_{i=1}^{k-1} \\operatorname{proj}_{v_i}(b_k)\\)</span> Result: orthogonal sequence with \\(\\operatorname{span}(v_1,\\ldots,v_k) = \\operatorname{span}(b_1,\\ldots,b_k)\\). Divide by lengths for orthonormal basis.",
+  },
+  {
+    topic: "ortho",
+    q: "Define symmetric matrix and orthogonal matrix.",
+    a: "<span class='highlight'>Symmetric:</span> \\(A^T = A\\).<br><br><span class='highlight'>Orthogonal:</span> \\(A^TA = AA^T = I_n\\), i.e.\ \\(A^{-1} = A^T\\).<br><br><span class='highlight'>Theorem:</span> \\(A\\) is orthogonal \\(\\iff\\) its columns form an orthonormal basis of \\(\\mathbb{R}^n\\).",
+  },
+  {
+    topic: "ortho",
+    q: "State the Spectral Theorem for real symmetric matrices.",
+    a: "Every <span class='highlight'>real symmetric matrix</span> is diagonalisable over \\(\\mathbb{R}\\).<br><br>Moreover, it can be diagonalised by an <span class='highlight'>orthogonal matrix</span> \\(P\\): <span class='formula'>\\(P^{-1}AP = P^TAP = D \\text{ (diagonal)}\\)</span>",
+  },
+
+  // ── PROOFS ─────────────────────────────────────────────────────────────
+  {
+    topic: "proof",
+    q: "★ Prove the Extension Lemma: if \\(v_1,\\ldots,v_k\\) is lin.\ independent and \\(v \\notin \\operatorname{span}(v_1,\\ldots,v_k)\\), then \\(v_1,\\ldots,v_k,v\\) is lin.\ independent.",
+    a: "Suppose \\(a_1v_1 + \\cdots + a_kv_k + av = 0\\). If \\(a = 0\\), this is a dependence relation on \\(v_1,\\ldots,v_k\\), contradicting independence. So \\(a \\neq 0\\), giving <span class='formula'>\\(v = -a^{-1}(a_1v_1 + \\cdots + a_kv_k) \\in \\operatorname{span}(v_1,\\ldots,v_k)\\)</span> — contradiction. So all coefficients are zero. ∎",
+  },
+  {
+    topic: "proof",
+    q: "★ Prove that an orthogonal sequence of non-zero vectors is linearly independent.",
+    a: "Suppose \\(\\sum_{i=1}^k a_i v_i = 0\\). Take the dot product with \\(v_j\\): <span class='formula'>\\(\\sum_{i=1}^k a_i (v_i \\cdot v_j) = a_j \\|v_j\\|^2 = 0\\)</span> Since \\(v_j \\neq 0\\), \\(\\|v_j\\|^2 > 0\\), so \\(a_j = 0\\). This holds for all \\(j\\). ∎",
+  },
+  {
+    topic: "proof",
+    q: "★ Prove that eigenvectors with distinct eigenvalues are linearly independent.",
+    a: "Induction on \\(k\\). Base \\(k=1\\): non-zero vector is independent. Suppose result holds for \\(k-1\\). If \\(\\sum_{i=1}^k a_iv_i = 0\\), apply \\((A - \\lambda_k I)\\): <span class='formula'>\\(\\sum_{i=1}^{k-1} a_i(\\lambda_i - \\lambda_k)v_i = 0\\)</span> By induction, \\(a_i(\\lambda_i-\\lambda_k)=0\\). Since \\(\\lambda_i \\neq \\lambda_k\\), each \\(a_i=0\\), then \\(a_k=0\\). ∎",
+  },
+  {
+    topic: "proof",
+    q: "★ Prove: a diagonalisable matrix with a unique eigenvalue \\(\\lambda\\) must equal \\(\\lambda I_n\\).",
+    a: "If \\(A\\) is diagonalisable, \\(\\exists\\) invertible \\(P\\) with \\(P^{-1}AP = D\\) diagonal. The diagonal entries of \\(D\\) are the eigenvalues of the corresponding columns of \\(P\\). Since there is only one eigenvalue \\(\\lambda\\): <span class='formula'>\\(D = \\lambda I_n \\implies A = P(\\lambda I_n)P^{-1} = \\lambda PP^{-1} = \\lambda I_n\\)</span> ∎",
+  },
+  {
+    topic: "proof",
+    q: "★ Prove that eigenvectors of a real symmetric matrix with different eigenvalues are orthogonal.",
+    a: "Let \\(Av = \\lambda v\\) and \\(Aw = \\mu w\\) with \\(\\lambda \\neq \\mu\\). Then: <span class='formula'>\\(\\lambda(v \\cdot w) = (\\lambda v)\\cdot w = (Av)\\cdot w = v\\cdot(A^Tw) = v\\cdot(Aw) = \\mu(v\\cdot w)\\)</span> (using \\(A^T = A\\) for symmetry). So \\((\\lambda - \\mu)(v \\cdot w) = 0\\). Since \\(\\lambda \\neq \\mu\\), we get \\(v \\cdot w = 0\\). ∎",
+  },
+  {
+    topic: "proof",
+    q: "★ Prove: \\((Au)\\cdot v = u \\cdot (\\bar{A}^T v)\\) for \\(u,v \\in \\mathbb{C}^n\\).",
+    a: "<span class='formula'>\\((Au)\\cdot v = (Au)^T\\bar{v} = u^T A^T \\bar{v} = u^T\\overline{(\\bar{A}^Tv)} = u \\cdot (\\bar{A}^Tv)\\)</span> The third step uses that for complex matrices \\(A^T\\bar{v} = \\overline{\\bar{A}^Tv}\\). ∎",
+  },
+  {
+    topic: "proof",
+    q: "★ Prove: \\((P^{-1}AP)^n = P^{-1}A^nP\\) for natural number \\(n\\).",
+    a: "<span class='highlight'>Induction.</span> Base \\(n=0\\): \\(I = P^{-1}IP\\). ✓<br><br>Step: assume \\((P^{-1}AP)^k = P^{-1}A^kP\\). Then: <span class='formula'>\\((P^{-1}AP)^{k+1} = P^{-1}A^kP \\cdot P^{-1}AP = P^{-1}A^k \\cdot AP = P^{-1}A^{k+1}P\\)</span> ∎",
+  },
+  {
+    topic: "proof",
+    q: "★ Prove: \\([v]_B = P^{-1}v\\) where \\(P\\) is the change of basis matrix for basis \\(B = b_1,\\ldots,b_n\\).",
+    a: "Let \\(v = \\sum_{i=1}^n a_i b_i\\) so \\([v]_B = (a_1,\\ldots,a_n)^T\\). Then: <span class='formula'>\\(P[v]_B = P\\begin{pmatrix}a_1\\\\\\vdots\\\\a_n\\end{pmatrix} = \\sum_{i=1}^n a_i b_i = v\\)</span> (by column decomposition). So \\([v]_B = P^{-1}v\\). ∎",
+  },
+  {
+    topic: "proof",
+    q: "★ Prove: if \\(A\\) has \\(n\\) distinct real eigenvalues, it is diagonalisable over \\(\\mathbb{R}\\).",
+    a: "Let \\(\\lambda_1,\\ldots,\\lambda_n\\) be the distinct eigenvalues and \\(v_i\\) a \\(\\lambda_i\\)-eigenvector. By the theorem that <span class='highlight'>eigenvectors with distinct eigenvalues are linearly independent</span>, \\(v_1,\\ldots,v_n\\) is linearly independent. A linearly independent sequence of length \\(n\\) in \\(\\mathbb{R}^n\\) is a basis. So there is a basis of eigenvectors, hence \\(A\\) is diagonalisable. ∎",
+  },
+  {
+    topic: "proof",
+    q: "★ State and sketch the proof that \\(C(A) = \\{Av : v \\in \\mathbb{R}^n\\}\\) is a subspace.",
+    a: "We check the three subspace conditions.<br><br>1. \\(0 = A\\cdot 0 \\in C(A)\\). ✓<br><br>2. If \\(Av_1, Av_2 \\in C(A)\\) then \\(Av_1 + Av_2 = A(v_1+v_2) \\in C(A)\\). ✓<br><br>3. If \\(Av \\in C(A)\\) and \\(\\lambda \\in \\mathbb{R}\\) then \\(\\lambda(Av) = A(\\lambda v) \\in C(A)\\). ✓ ∎",
+  },
+  // ── Bonus: Complex dot product & notation ─────────────────────────────
+  {
+    topic: "ortho",
+    q: "Define the complex dot product for \\(u,v \\in \\mathbb{C}^n\\) and state its properties.",
+    a: "<span class='formula'>\\(u \\cdot v = u^T\\bar{v} = \\sum_{i=1}^n u_i\\overline{v_i}\\)</span> Properties: \\(u\\cdot u = \\sum|u_i|^2 \\geqslant 0\\) (\\(=0 \\iff u=0\\)); linear in first argument; \\(u \\cdot (\\lambda v) = \\bar{\\lambda}(u\\cdot v)\\); \\(u \\cdot v = \\overline{v \\cdot u}\\).",
+    hint: "Needed for the spectral theorem proof involving complex matrices."
+  },
+];
+
+// ── State ──────────────────────────────────────────────────────────────────
+let deck = [];
+let currentIdx = 0;
+let isFlipped = false;
+let correctCount = 0;
+let wrongCount = 0;
+let currentFilter = 'all';
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function setFilter(topic, btn) {
+  currentFilter = topic;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  restart();
+}
+
+function restart() {
+  const filtered = currentFilter === 'all'
+    ? ALL_CARDS
+    : ALL_CARDS.filter(c => c.topic === currentFilter);
+  deck = shuffle([...filtered]);
+  currentIdx = 0;
+  correctCount = 0;
+  wrongCount = 0;
+  isFlipped = false;
+  updateScores();
+  renderCard();
+}
+
+function renderCard() {
+  const card = document.getElementById('card');
+  const front = document.getElementById('card-front');
+  const back = document.getElementById('card-back');
+
+  card.classList.remove('flipped');
+  isFlipped = false;
+
+  if (currentIdx >= deck.length) {
+    front.innerHTML = `
+      <div style="text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">🎉</div>
+        <div style="font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px">All cards complete!</div>
+        <div style="color:var(--muted);font-size:14px;margin-bottom:24px">Score: ${correctCount} / ${deck.length}</div>
+        <button class="btn btn-primary" onclick="restart()" style="margin:0 auto">↺ Restart</button>
+      </div>`;
+    back.innerHTML = '';
+    updateProgress();
+    return;
+  }
+
+  const c = deck[currentIdx];
+  const tagClass = `tag-${c.topic}`;
+  const tagNames = {
+    matrices: 'Matrices & Systems',
+    subspaces: 'Subspaces & Dimension',
+    linear: 'Linear Maps',
+    eigen: 'Eigenvalues & Det.',
+    ortho: 'Orthogonality',
+    proof: '★ Proof',
+  };
+
+  front.innerHTML = `
+    <div class="card-label">Question</div>
+    <span class="topic-tag ${tagClass}">${tagNames[c.topic]}</span>
+    <div class="question-text">${c.q}</div>
+    <div class="flip-hint">Click to reveal answer</div>`;
+
+  back.innerHTML = `
+    <div class="answer-label">Answer</div>
+    <div class="answer-text">${c.a}</div>
+    ${c.hint ? `<div class="hint">💡 ${c.hint}</div>` : ''}`;
+
+  updateProgress();
+
+  // Re-typeset MathJax
+  if (window.MathJax) {
+    MathJax.typesetPromise([front, back]).catch(err => {});
+  }
+}
+
+function flipCard() {
+  const card = document.getElementById('card');
+  isFlipped = !isFlipped;
+  card.classList.toggle('flipped', isFlipped);
+}
+
+function nextCard() {
+  currentIdx++;
+  isFlipped = false;
+  renderCard();
+}
+
+function markCorrect() {
+  correctCount++;
+  updateScores();
+  nextCard();
+}
+
+function markWrong() {
+  wrongCount++;
+  // Put the card back near the end for review
+  const card = deck[currentIdx];
+  deck.splice(currentIdx, 1);
+  const insertAt = Math.min(deck.length, currentIdx + 3 + Math.floor(Math.random() * 3));
+  deck.splice(insertAt, 0, card);
+  updateScores();
+  nextCard();
+}
+
+function updateProgress() {
+  const total = deck.length;
+  const done = Math.min(currentIdx, total);
+  const pct = total > 0 ? Math.round((done / total) * 100) : 100;
+  document.getElementById('progress-label').textContent = `Card ${Math.min(currentIdx + 1, total)} of ${total}`;
+  document.getElementById('progress-pct').textContent = `${pct}%`;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function updateScores() {
+  document.getElementById('score-correct').textContent = correctCount;
+  document.getElementById('score-wrong').textContent = wrongCount;
+  const remaining = Math.max(0, deck.length - currentIdx);
+  document.getElementById('score-remaining').textContent = remaining;
+}
+
+// ── Keyboard controls ──────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+  if (e.key === 'ArrowRight') nextCard();
+  if (e.key === '1') markCorrect();
+  if (e.key === '2') markWrong();
+  if (e.key === 'r' || e.key === 'R') restart();
+});
+
+// ── Init ───────────────────────────────────────────────────────────────────
+restart();
+</script>
+</body>
+</html>

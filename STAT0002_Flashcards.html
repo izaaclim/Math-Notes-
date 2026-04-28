@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STAT0002 Flashcards</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0e0e0f;
+    --surface: #161618;
+    --surface2: #1e1e21;
+    --border: #2a2a2e;
+    --accent: #e8c87a;
+    --accent2: #7ab8e8;
+    --accent3: #b87ae8;
+    --text: #e8e6e0;
+    --text-dim: #7a7870;
+    --text-mid: #a8a5a0;
+    --green: #7ae8b8;
+    --red: #e87a7a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(232,200,122,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,200,122,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .header {
+    position: relative;
+    z-index: 10;
+    padding: 24px 32px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .header-left h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .header-left p {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.08em;
+    border: 1px solid;
+  }
+
+  .badge-gold { color: var(--accent); border-color: var(--accent); background: rgba(232,200,122,0.08); }
+  .badge-blue { color: var(--accent2); border-color: var(--accent2); background: rgba(122,184,232,0.08); }
+
+  /* Category filter */
+  .controls {
+    position: relative;
+    z-index: 10;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .controls label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-right: 4px;
+  }
+
+  .filter-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    padding: 5px 12px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+
+  .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(232,200,122,0.1); }
+
+  /* Progress */
+  .progress-bar-wrap {
+    position: relative;
+    z-index: 10;
+    padding: 12px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 3px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+
+  .progress-text {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  .progress-counters {
+    display: flex;
+    gap: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+  }
+
+  .cnt-known { color: var(--green); }
+  .cnt-again { color: var(--red); }
+
+  /* Main area */
+  .main {
+    position: relative;
+    z-index: 10;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    gap: 24px;
+  }
+
+  /* Card */
+  .card-container {
+    width: 100%;
+    max-width: 720px;
+    perspective: 1200px;
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    min-height: 320px;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+    cursor: pointer;
+  }
+
+  .card-inner.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 40px 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .card-face.back {
+    transform: rotateY(180deg);
+    background: var(--surface2);
+    border-color: rgba(232,200,122,0.2);
+  }
+
+  .card-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-tag .cat-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+
+  .card-question {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.45rem;
+    line-height: 1.5;
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  .card-hint {
+    margin-top: 20px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+
+  .card-answer-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .card-answer {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+  }
+
+  .card-answer code, .card-answer .formula {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.88rem;
+    background: rgba(232,200,122,0.08);
+    border: 1px solid rgba(232,200,122,0.15);
+    padding: 2px 6px;
+    border-radius: 2px;
+    color: var(--accent);
+  }
+
+  .card-answer ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .card-answer ul li {
+    padding: 3px 0 3px 16px;
+    position: relative;
+  }
+
+  .card-answer ul li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--text-dim);
+  }
+
+  .card-answer table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin-top: 8px;
+  }
+
+  .card-answer th {
+    text-align: left;
+    padding: 6px 10px;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+
+  .card-answer td {
+    padding: 5px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.83rem;
+  }
+
+  /* Flip prompt */
+  .flip-prompt {
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    opacity: 0.7;
+    margin-top: -8px;
+  }
+
+  /* Action buttons */
+  .actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .action-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    padding: 10px 28px;
+    border-radius: 2px;
+    border: 1px solid;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: all 0.15s;
+    background: transparent;
+  }
+
+  .btn-again { color: var(--red); border-color: var(--red); }
+  .btn-again:hover { background: rgba(232,122,122,0.1); }
+  .btn-known { color: var(--green); border-color: var(--green); }
+  .btn-known:hover { background: rgba(122,232,184,0.1); }
+  .btn-skip { color: var(--text-dim); border-color: var(--border); }
+  .btn-skip:hover { border-color: var(--text-mid); color: var(--text-mid); }
+
+  .actions-hidden { display: none; }
+
+  /* Nav */
+  .nav-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .nav-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    padding: 7px 16px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+
+  .nav-btn:hover { border-color: var(--text-mid); color: var(--text); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Shuffle done */
+  .done-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+    max-width: 480px;
+  }
+
+  .done-screen h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--accent);
+  }
+
+  .done-screen p {
+    font-size: 0.9rem;
+    color: var(--text-mid);
+    line-height: 1.7;
+  }
+
+  .done-stats {
+    display: flex;
+    gap: 32px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+  }
+
+  .done-stat span { display: block; font-size: 2rem; font-weight: 500; }
+  .done-stat label { font-size: 0.65rem; letter-spacing: 0.1em; color: var(--text-dim); }
+
+  .btn-restart {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    padding: 11px 32px;
+    border-radius: 2px;
+    border: 1px solid var(--accent);
+    background: rgba(232,200,122,0.08);
+    color: var(--accent);
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    transition: all 0.15s;
+  }
+
+  .btn-restart:hover { background: rgba(232,200,122,0.18); }
+
+  /* Category colours */
+  .cat-prob { background: var(--accent); }
+  .cat-desc { background: var(--accent2); }
+  .cat-dist { background: var(--accent3); }
+  .cat-inf  { background: var(--green); }
+  .cat-reg  { background: #e8a07a; }
+  .cat-cont { background: #e8e87a; }
+  .cat-corr { background: #a0e87a; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>STAT0002 Flashcards</h1>
+    <p>Introduction to Probability &amp; Statistics</p>
+  </div>
+  <div class="header-right">
+    <span class="badge badge-gold">CLOSED-BOOK EXAM ESSENTIALS</span>
+    <span class="badge badge-blue" id="total-badge">— cards</span>
+  </div>
+</div>
+
+<div class="controls">
+  <label>TOPIC</label>
+  <button class="filter-btn active" data-cat="all">All</button>
+  <button class="filter-btn" data-cat="prob">Probability</button>
+  <button class="filter-btn" data-cat="desc">Descriptive Stats</button>
+  <button class="filter-btn" data-cat="dist">Distributions</button>
+  <button class="filter-btn" data-cat="inf">Inference</button>
+  <button class="filter-btn" data-cat="cont">Contingency</button>
+  <button class="filter-btn" data-cat="reg">Regression</button>
+  <button class="filter-btn" data-cat="corr">Correlation</button>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <span class="progress-text" id="progress-text">0 / 0</span>
+  <div class="progress-counters">
+    <span class="cnt-known" id="cnt-known">✓ 0</span>
+    <span class="cnt-again" id="cnt-again">↺ 0</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="card-container" id="card-container">
+    <div class="card-inner" id="card-inner" onclick="flipCard()">
+      <div class="card-face front" id="card-front">
+        <div class="card-tag"><span class="cat-dot" id="cat-dot"></span><span id="cat-label"></span></div>
+        <div class="card-question" id="card-question">Loading...</div>
+        <div class="card-hint" id="card-hint"></div>
+      </div>
+      <div class="card-face back" id="card-back">
+        <div class="card-answer-label">ANSWER</div>
+        <div class="card-answer" id="card-answer"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flip-prompt" id="flip-prompt">click card to reveal answer</div>
+
+  <div class="actions actions-hidden" id="actions">
+    <button class="action-btn btn-again" onclick="markCard('again')">↺ Study Again</button>
+    <button class="action-btn btn-known" onclick="markCard('known')">✓ Got It</button>
+    <button class="action-btn btn-skip" onclick="nextCard()">→ Skip</button>
+  </div>
+
+  <div class="nav-controls">
+    <button class="nav-btn" id="btn-prev" onclick="prevCard()" disabled>← Prev</button>
+    <button class="nav-btn" onclick="shuffleCards()">⇄ Shuffle</button>
+    <button class="nav-btn" id="btn-next" onclick="nextCard()">Next →</button>
+  </div>
+
+  <div class="done-screen" id="done-screen">
+    <h2>Deck Complete</h2>
+    <p>You've been through all the cards in this set.</p>
+    <div class="done-stats">
+      <div class="done-stat"><span class="cnt-known" id="done-known">0</span><label>GOT IT</label></div>
+      <div class="done-stat"><span class="cnt-again" id="done-again">0</span><label>REVIEW</label></div>
+    </div>
+    <button class="btn-restart" onclick="restart()">Start Again</button>
+  </div>
+
+</div>
+
+<script>
+const CARDS = [
+  // ── PROBABILITY ──────────────────────────────────────────────
+  {
+    cat: 'prob',
+    q: 'What is the frequentist definition of probability?',
+    a: 'The long-run relative frequency of an event:<br><br><span class="formula">P(E) = lim n(E)/n as n → ∞</span><br><br>The proportion of times event E occurs over infinitely many repeated identical experiments.',
+    hint: 'Long-run relative frequency'
+  },
+  {
+    cat: 'prob',
+    q: 'Define conditional probability P(A | B).',
+    a: '<span class="formula">P(A | B) = P(A, B) / P(B)</span>, provided P(B) > 0.<br><br>"The probability of A given that B has occurred." Restricts the sample space to outcomes where B occurs.',
+    hint: 'Restrict sample space to B'
+  },
+  {
+    cat: 'prob',
+    q: 'State the Addition Rule of probability.',
+    a: '<span class="formula">P(A or B) = P(A) + P(B) − P(A and B)</span><br><br>Special case — if A and B are <b>mutually exclusive</b>:<br><span class="formula">P(A or B) = P(A) + P(B)</span>',
+    hint: 'Subtract overlap to avoid double-counting'
+  },
+  {
+    cat: 'prob',
+    q: 'State the Multiplication Rule of probability.',
+    a: '<span class="formula">P(A, B) = P(B) · P(A | B) = P(A) · P(B | A)</span><br><br>Generalised chain rule:<br><span class="formula">P(A₁,…,Aₙ) = P(A₁)·P(A₂|A₁)·P(A₃|A₁,A₂)·…</span>',
+    hint: 'Joint = conditional × marginal'
+  },
+  {
+    cat: 'prob',
+    q: 'State the Law of Total Probability.',
+    a: 'If B₁,…,Bₙ are <b>mutually exclusive and exhaustive</b> with P(Bᵢ) > 0:<br><br><span class="formula">P(A) = Σᵢ P(A | Bᵢ) · P(Bᵢ)</span><br><br>Weighted average of conditional probabilities.',
+    hint: 'Partition the sample space'
+  },
+  {
+    cat: 'prob',
+    q: 'State Bayes\' Theorem.',
+    a: '<span class="formula">P(Bᵢ | A) = P(A | Bᵢ)·P(Bᵢ) / Σⱼ P(A | Bⱼ)·P(Bⱼ)</span><br><br>Inverts a conditional probability: given P(A | Bᵢ), find P(Bᵢ | A).',
+    hint: 'Invert a conditional probability'
+  },
+  {
+    cat: 'prob',
+    q: 'What does it mean for events A and B to be <em>independent</em>?',
+    a: '<span class="formula">P(A, B) = P(A) · P(B)</span><br><br>Equivalently (when P(B) > 0): <span class="formula">P(A | B) = P(A)</span><br><br>Knowing B occurred gives no information about A. Independence is symmetric.',
+    hint: 'Knowing one tells you nothing about the other'
+  },
+  {
+    cat: 'prob',
+    q: 'What does it mean for events to be <em>mutually exclusive</em>? <em>Exhaustive</em>?',
+    a: '<b>Mutually exclusive</b>: cannot both occur; <span class="formula">P(A ∩ B) = 0</span><br><br><b>Exhaustive</b>: at least one must occur; <span class="formula">P(B₁ ∪ … ∪ Bₙ) = 1</span><br><br>Two events with positive probability <b>cannot</b> be both independent and mutually exclusive.',
+    hint: 'Exclusive = no overlap; Exhaustive = cover everything'
+  },
+
+  // ── DESCRIPTIVE STATISTICS ────────────────────────────────────
+  {
+    cat: 'desc',
+    q: 'What is the five-number summary?',
+    a: 'A concise description of a distribution\'s centre, spread and tails:<br><br><span class="formula">(x₍₁₎, q_L, m, q_U, x₍ₙ₎)</span><br><br>Minimum · Lower Quartile · Median · Upper Quartile · Maximum.<br>IQR = q_U − q_L.',
+    hint: 'Min, Q1, Median, Q3, Max'
+  },
+  {
+    cat: 'desc',
+    q: 'What is the sample mean x̄, and what is the sample mode?',
+    a: '<b>Sample mean</b>: <span class="formula">x̄ = (1/n) Σᵢ xᵢ</span> — the arithmetic average.<br><br><b>Sample mode</b>: the most frequently occurring value (can be used for any data type).<br><br>Note: sample variance S² = 1/(n−1) Σ(xᵢ − x̄)² will be provided if needed.',
+    hint: 'Mean = average; Mode = most common'
+  },
+  {
+    cat: 'desc',
+    q: 'What is a stem-and-leaf plot and what is it useful for?',
+    a: 'A display that splits each data value into a <b>stem</b> (leading digit(s)) and a <b>leaf</b> (trailing digit). Like a histogram but retains the original values.<br><br>Useful for: reading off the five-number summary, spotting gaps, outliers and skewness, comparing two groups back-to-back.',
+    hint: 'Like a histogram that keeps the data'
+  },
+  {
+    cat: 'desc',
+    q: 'How is a boxplot constructed and what does each element show?',
+    a: '<ul><li><b>Box</b>: q_L to q_U — middle 50% of data</li><li><b>Line in box</b>: median</li><li><b>Whiskers</b>: extend to the most extreme points within <b>1.5 × IQR</b> of the box</li><li><b>Individual points</b>: beyond the whiskers — potential outliers</li></ul>',
+    hint: 'Box = IQR; Whiskers = 1.5 × IQR'
+  },
+  {
+    cat: 'desc',
+    q: 'What is a histogram and how is its y-axis scaled?',
+    a: 'Graphical summary of the distribution of continuous data using bins.<br><br><span class="formula">y-axis height = relative frequency / bin width (= density)</span><br><br>Area of each bar = relative frequency. Total area = 1.<br>It is an estimate of the probability density function.',
+    hint: 'Height = density; area = probability'
+  },
+  {
+    cat: 'desc',
+    q: 'What is a Q-Q plot and how do you interpret it?',
+    a: 'Plots order statistics x₍ᵢ₎ against theoretical quantiles of the candidate distribution.<br><br>If data come from that distribution → points lie <b>close to a straight line</b>.<br><br>Departures: curves upward at ends = heavy tails; S-shape = skewness. Use simulation envelopes to judge significance.',
+    hint: 'Straight line = data matches distribution'
+  },
+
+  // ── RANDOM VARIABLES ──────────────────────────────────────────
+  {
+    cat: 'dist',
+    q: 'What is the mean (expectation) of a discrete random variable X, and of g(X)?',
+    a: '<span class="formula">E(X) = Σₓ x · P(X = x)</span><br><br><span class="formula">E[g(X)] = Σₓ g(x) · P(X = x)</span><br><br>Note: <b>E[g(X)] ≠ g[E(X)]</b> in general (except for linear g).',
+    hint: 'Weighted average with probabilities as weights'
+  },
+  {
+    cat: 'dist',
+    q: 'What is the variance of a discrete random variable X?',
+    a: '<span class="formula">var(X) = E[(X − μ)²] = E(X²) − [E(X)]²</span><br><br>Always ≥ 0. Standard deviation = √var(X), same units as X.<br><br>Shortcut: <span class="formula">var(X) = E(X²) − μ²</span>',
+    hint: 'var = E(X²) − [E(X)]²'
+  },
+  {
+    cat: 'dist',
+    q: 'What is the mean and variance of a continuous random variable X, and of g(X)?',
+    a: '<span class="formula">E(X) = ∫ x · f(x) dx</span><br><span class="formula">var(X) = ∫ (x−μ)² · f(x) dx = E(X²) − μ²</span><br><span class="formula">E[g(X)] = ∫ g(x) · f(x) dx</span><br><br>P(X = x) = 0 for any specific value — probabilities are areas.',
+    hint: 'Replace sum with integral'
+  },
+  {
+    cat: 'dist',
+    q: 'What are the mean and variance of aX + b?',
+    a: '<span class="formula">E(aX + b) = a·E(X) + b</span><br><br><span class="formula">var(aX + b) = a²·var(X)</span><br><br>Shifting by b changes the mean but not the variance. Multiplying by a scales variance by a².',
+    hint: 'Shift doesn\'t affect spread'
+  },
+  {
+    cat: 'dist',
+    q: 'What are E(X₁ + … + Xₙ) and var(X₁ + … + Xₙ)?',
+    a: '<span class="formula">E(X₁ + … + Xₙ) = E(X₁) + … + E(Xₙ)</span><br>↳ Always true, regardless of independence.<br><br><span class="formula">var(X₁ + … + Xₙ) = var(X₁) + … + var(Xₙ)</span><br>↳ True only when X₁,…,Xₙ are <b>independent</b>.',
+    hint: 'Expectations always add; variances add only if independent'
+  },
+  {
+    cat: 'dist',
+    q: 'What is the median of a random variable?',
+    a: 'The value m such that:<br><span class="formula">P(X < m) ≤ ½ ≤ P(X ≤ m)</span><br><br>For continuous X: solve <span class="formula">F(m) = ½</span>.<br><br>The median divides the distribution into two equal halves.',
+    hint: 'F(m) = ½ for continuous distributions'
+  },
+  {
+    cat: 'dist',
+    q: 'What is the mode of a random variable?',
+    a: 'The value where the PMF (discrete) or PDF (continuous) is <b>maximised</b>.<br><br>The most probable value. For continuous distributions, find by solving:<br><span class="formula">d/dx f(x) = 0</span> and confirming it is a maximum.',
+    hint: 'Maximum of PMF/PDF'
+  },
+
+  // ── DISTRIBUTIONS ─────────────────────────────────────────────
+  {
+    cat: 'dist',
+    q: 'Situations/assumptions giving rise to the <em>Binomial</em> distribution.',
+    a: 'Y ~ Binomial(n, p) when counting the <b>number of successes in n independent, identical Bernoulli(p) trials</b>.<br><br>PMF: <span class="formula">P(Y=y) = C(n,y) pʸ(1−p)ⁿ⁻ʸ</span>, y = 0,…,n<br>E(Y) = np · · · var(Y) = np(1−p)',
+    hint: 'Fixed n trials; count successes'
+  },
+  {
+    cat: 'dist',
+    q: 'Situations/assumptions giving rise to the <em>Geometric</em> distribution.',
+    a: 'W ~ Geometric(p) = <b>number of independent Bernoulli(p) trials up to and including the first success</b>.<br><br>PMF: <span class="formula">P(W=w) = (1−p)^(w−1) p</span>, w = 1, 2, 3, …<br>E(W) = 1/p · · · var(W) = (1−p)/p²<br><br>Support starts at 1 (not 0).',
+    hint: 'Count trials until first success (inclusive)'
+  },
+  {
+    cat: 'dist',
+    q: 'Situations/assumptions giving rise to the <em>Poisson</em> distribution.',
+    a: 'N ~ Poisson(μ) = <b>count of events in a fixed interval</b>, where events occur in a <b>Poisson process</b>: one at a time, independently, at constant rate λ. μ = λh for interval length h.<br><br>PMF: <span class="formula">P(N=n) = μⁿe⁻ᵘ/n!</span>, n = 0,1,2,…<br>E(N) = var(N) = μ  ← mean equals variance',
+    hint: 'Counts in Poisson process; mean = variance'
+  },
+  {
+    cat: 'dist',
+    q: 'Situations/assumptions giving rise to the <em>Uniform</em> distribution.',
+    a: 'U ~ Uniform(a, b) when <b>all values in the interval (a, b) are equally likely</b>.<br><br>Arises naturally for event times in a Poisson process.<br><br>PDF: <span class="formula">f(u) = 1/(b−a)</span>, a < u < b<br>E(U) = (a+b)/2 · · · var(U) = (b−a)²/12',
+    hint: 'Constant density over interval'
+  },
+  {
+    cat: 'dist',
+    q: 'Situations/assumptions giving rise to the <em>Exponential</em> distribution.',
+    a: 'T ~ Exponential(λ) = <b>time until first event, or time between events, in a Poisson process of rate λ</b>.<br><br>PDF: <span class="formula">f(t) = λe^(−λt)</span>, t ≥ 0<br>E(T) = 1/λ · · · var(T) = 1/λ²<br><br>Distribution is positively skewed.',
+    hint: 'Waiting time in a Poisson process'
+  },
+  {
+    cat: 'dist',
+    q: 'Situations/assumptions giving rise to the <em>Normal</em> distribution.',
+    a: 'Z ~ N(μ, σ²) arises for:<ul><li><b>Sums/averages</b> of many i.i.d. r.v.s (Central Limit Theorem)</li><li><b>Measurement errors</b></li><li>Continuous data after a <b>suitable transformation</b></li></ul>PDF: <span class="formula">f(z) = (1/σ√2π)exp[−(z−μ)²/2σ²]</span><br>Symmetric, bell-shaped. E(Z) = μ, var(Z) = σ².',
+    hint: 'CLT, errors, transformations'
+  },
+
+  // ── INFERENCE ─────────────────────────────────────────────────
+  {
+    cat: 'inf',
+    q: 'Define the <em>bias</em> of an estimator T for parameter θ.',
+    a: '<span class="formula">bias(T) = E(T) − θ</span><br><br>T is <b>unbiased</b> if E(T) = θ, i.e. bias = 0.<br><br>Unbiasedness means the estimator is correct on average across repeated samples — it does not mean it equals θ in any one sample.',
+    hint: 'bias = E(T) − θ; zero is ideal'
+  },
+  {
+    cat: 'inf',
+    q: 'Define the <em>Mean Squared Error (MSE)</em> of an estimator.',
+    a: '<span class="formula">MSE(T) = E[(T − θ)²] = var(T) + [bias(T)]²</span><br><br>Combines both variance and bias into one number. Smaller MSE = better estimator overall.<br><br>If T is unbiased: MSE(T) = var(T).',
+    hint: 'MSE = variance + bias²'
+  },
+  {
+    cat: 'inf',
+    q: 'What is the <em>standard error</em> of an estimator?',
+    a: 'The <b>estimated standard deviation</b> of the estimator — √var(T) with unknown parameters replaced by estimates.<br><br>For the sample mean: <span class="formula">SE(x̄) = s / √n</span><br><br>Measures how much the estimator is expected to vary from sample to sample.',
+    hint: 'Estimated SD of the estimator'
+  },
+  {
+    cat: 'inf',
+    q: 'What does it mean for an estimator T to be <em>weakly consistent</em>? State a sufficient condition.',
+    a: 'T is consistent for θ if <span class="formula">P(|T − θ| > ε) → 0 as n → ∞</span> for every ε > 0.<br><br><b>Sufficient condition</b>: <span class="formula">MSE(T) → 0 as n → ∞</span><br>(i.e. both bias(T) → 0 AND var(T) → 0).',
+    hint: 'MSE → 0 ⟹ consistency'
+  },
+  {
+    cat: 'inf',
+    q: 'If X₁,…,Xₙ are i.i.d. with mean μ and variance σ², what are E(x̄) and E(S²)?',
+    a: '<span class="formula">E(x̄) = μ</span> — sample mean is unbiased for μ.<br><br><span class="formula">E(S²) = σ²</span> — sample variance (denominator n−1) is unbiased for σ².<br><br>Also: <span class="formula">var(x̄) = σ²/n</span><br><br>These results hold for <b>any</b> underlying distribution.',
+    hint: 'Both x̄ and S² are unbiased — for any distribution'
+  },
+
+  // ── CONTINGENCY TABLES ────────────────────────────────────────
+  {
+    cat: 'cont',
+    q: 'How do you calculate <em>estimated expected frequencies</em> in a contingency table?',
+    a: 'Under the assumption of independence between the row and column variables:<br><br><span class="formula">μ̂ᵢⱼ = (row i total × col j total) / grand total</span><br><br><span class="formula">μ̂ᵢⱼ = nᵢ₊ · n₊ⱼ / n</span><br><br>These always preserve the observed row and column marginal totals.',
+    hint: '(row total × col total) / grand total'
+  },
+  {
+    cat: 'cont',
+    q: 'Define <em>relative risk</em>.',
+    a: 'The <b>ratio of two probabilities</b>:<br><br><span class="formula">RR = P(outcome | group 1) / P(outcome | group 2)</span><br><br>RR = 1 means no difference between groups. RR = 2 means the event is twice as likely in group 1.<br><br><b>Cannot</b> be estimated from case-control studies where column totals are fixed.',
+    hint: 'Ratio of probabilities; equals 1 under no association'
+  },
+  {
+    cat: 'cont',
+    q: 'Define <em>odds</em> and the <em>odds ratio</em>.',
+    a: '<b>Odds</b> of event B: <span class="formula">P(B) / (1 − P(B))</span><br>e.g. P(B) = 2/3 → odds = 2.<br><br><b>Odds ratio</b>:<br><span class="formula">OR = [P(A|G1)/(1−P(A|G1))] / [P(A|G2)/(1−P(A|G2))]</span><br><br>OR = 1 under no association. OR is preferred to RR because: (1) symmetric — same regardless of which variable is response; (2) can be estimated from case-control studies.',
+    hint: 'OR symmetric & valid in case-control studies'
+  },
+
+  // ── REGRESSION ────────────────────────────────────────────────
+  {
+    cat: 'reg',
+    q: 'Write down the simple linear regression model.',
+    a: '<span class="formula">Yᵢ = α + β xᵢ + εᵢ</span>, i = 1,…,n<br><br>where:<ul><li>α = intercept: E(Y | X = 0)</li><li>β = slope: change in E(Y) per unit increase in x</li><li>εᵢ = random errors with E(εᵢ) = 0, var(εᵢ) = σ²</li></ul>',
+    hint: 'Y = α + βx + ε'
+  },
+  {
+    cat: 'reg',
+    q: 'What are the four assumptions of the simple linear regression model?',
+    a: 'In order of importance (most to least critical):<ol style="padding-left:18px;margin-top:8px"><li><b>Linearity</b> — E(Y | X=x) is linear in x</li><li><b>Independence</b> — errors εᵢ are uncorrelated</li><li><b>Constant variance</b> — var(εᵢ) = σ² for all i</li><li><b>Normality</b> — εᵢ ~ N(0, σ²)</li></ol>',
+    hint: 'LINE: Linearity, Independence, Normal errors, Equal variance'
+  },
+  {
+    cat: 'reg',
+    q: 'What is the principle underlying least squares estimation?',
+    a: 'Choose α̂ and β̂ to <b>minimise the Residual Sum of Squares (RSS)</b>:<br><br><span class="formula">RSS = Σᵢ (Yᵢ − α̂ − β̂xᵢ)² = Σᵢ rᵢ²</span><br><br>i.e. minimise the sum of squared vertical distances from points to the fitted line.<br><br>Note: you do <b>NOT</b> need to know the resulting formulae for α̂ and β̂.',
+    hint: 'Minimise sum of squared residuals'
+  }
+];
+
+// ── State ─────────────────────────────────────────────────────────
+let deck = [...CARDS];
+let idx = 0;
+let flipped = false;
+let known = 0;
+let again = 0;
+let seen = new Set();
+let activeFilter = 'all';
+
+// ── Category config ───────────────────────────────────────────────
+const CAT = {
+  prob: { label: 'PROBABILITY', cls: 'cat-prob' },
+  desc: { label: 'DESCRIPTIVE STATISTICS', cls: 'cat-desc' },
+  dist: { label: 'DISTRIBUTIONS', cls: 'cat-dist' },
+  inf:  { label: 'INFERENCE', cls: 'cat-inf' },
+  cont: { label: 'CONTINGENCY TABLES', cls: 'cat-cont' },
+  reg:  { label: 'REGRESSION', cls: 'cat-reg' },
+  corr: { label: 'CORRELATION', cls: 'cat-corr' }
+};
+
+// ── Init ──────────────────────────────────────────────────────────
+function init() {
+  document.getElementById('total-badge').textContent = deck.length + ' cards';
+  renderCard();
+  updateProgress();
+}
+
+function applyFilter(cat) {
+  activeFilter = cat;
+  deck = cat === 'all' ? [...CARDS] : CARDS.filter(c => c.cat === cat);
+  idx = 0; flipped = false; known = 0; again = 0; seen = new Set();
+  document.getElementById('done-screen').style.display = 'none';
+  document.getElementById('card-container').style.display = '';
+  document.getElementById('flip-prompt').style.display = '';
+  document.getElementById('actions').className = 'actions actions-hidden';
+  document.getElementById('total-badge').textContent = deck.length + ' cards';
+  renderCard();
+  updateProgress();
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilter(btn.dataset.cat);
+  });
+});
+
+// ── Render ────────────────────────────────────────────────────────
+function renderCard() {
+  if (idx >= deck.length) { showDone(); return; }
+  const card = deck[idx];
+  seen.add(idx);
+
+  // Reset flip
+  const inner = document.getElementById('card-inner');
+  inner.classList.remove('flipped');
+  flipped = false;
+  document.getElementById('actions').className = 'actions actions-hidden';
+  document.getElementById('flip-prompt').style.display = '';
+
+  // Category
+  const cat = CAT[card.cat];
+  const dot = document.getElementById('cat-dot');
+  dot.className = 'cat-dot ' + cat.cls;
+  document.getElementById('cat-label').textContent = cat.label;
+
+  // Content
+  document.getElementById('card-question').textContent = card.q;
+  document.getElementById('card-hint').textContent = card.hint ? '💡 ' + card.hint : '';
+  document.getElementById('card-answer').innerHTML = card.a;
+
+  // Nav buttons
+  document.getElementById('btn-prev').disabled = idx === 0;
+  document.getElementById('btn-next').disabled = idx >= deck.length - 1;
+}
+
+// ── Flip ──────────────────────────────────────────────────────────
+function flipCard() {
+  const inner = document.getElementById('card-inner');
+  flipped = !flipped;
+  inner.classList.toggle('flipped', flipped);
+  if (flipped) {
+    document.getElementById('actions').className = 'actions';
+    document.getElementById('flip-prompt').style.display = 'none';
+  } else {
+    document.getElementById('actions').className = 'actions actions-hidden';
+    document.getElementById('flip-prompt').style.display = '';
+  }
+}
+
+// ── Mark ──────────────────────────────────────────────────────────
+function markCard(result) {
+  if (result === 'known') known++;
+  else again++;
+  updateCounters();
+  nextCard();
+}
+
+// ── Navigation ────────────────────────────────────────────────────
+function nextCard() {
+  if (idx < deck.length - 1) { idx++; renderCard(); updateProgress(); }
+  else showDone();
+}
+
+function prevCard() {
+  if (idx > 0) { idx--; renderCard(); updateProgress(); }
+}
+
+function shuffleCards() {
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  idx = 0; flipped = false;
+  document.getElementById('done-screen').style.display = 'none';
+  document.getElementById('card-container').style.display = '';
+  document.getElementById('flip-prompt').style.display = '';
+  document.getElementById('actions').className = 'actions actions-hidden';
+  renderCard(); updateProgress();
+}
+
+function restart() {
+  known = 0; again = 0; idx = 0; seen = new Set(); flipped = false;
+  document.getElementById('done-screen').style.display = 'none';
+  document.getElementById('card-container').style.display = '';
+  document.getElementById('flip-prompt').style.display = '';
+  document.getElementById('actions').className = 'actions actions-hidden';
+  updateCounters();
+  renderCard(); updateProgress();
+}
+
+// ── Done ──────────────────────────────────────────────────────────
+function showDone() {
+  document.getElementById('card-container').style.display = 'none';
+  document.getElementById('flip-prompt').style.display = 'none';
+  document.getElementById('actions').className = 'actions actions-hidden';
+  document.getElementById('done-known').textContent = known;
+  document.getElementById('done-again').textContent = again;
+  document.getElementById('done-screen').style.display = 'flex';
+}
+
+// ── Progress ──────────────────────────────────────────────────────
+function updateProgress() {
+  const pct = deck.length ? ((idx + 1) / deck.length * 100).toFixed(0) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = (idx + 1) + ' / ' + deck.length;
+}
+
+function updateCounters() {
+  document.getElementById('cnt-known').textContent = '✓ ' + known;
+  document.getElementById('cnt-again').textContent = '↺ ' + again;
+}
+
+// ── Keyboard ──────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+  if (e.key === 'ArrowRight') nextCard();
+  if (e.key === 'ArrowLeft') prevCard();
+  if (e.key === 'g' || e.key === 'G') { if (flipped) markCard('known'); }
+  if (e.key === 'r' || e.key === 'R') { if (flipped) markCard('again'); }
+});
+
+init();
+</script>
+</body>
+</html>

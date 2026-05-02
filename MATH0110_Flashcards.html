@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MATH0110 Flashcards</title>
+<style>
+body { font-family: sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; background: #f9f9f9; color: #111; }
+h1 { font-size: 22px; margin-bottom: 4px; }
+p.sub { color: #666; font-size: 14px; margin-bottom: 20px; }
+
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.filters select, .filters button { font-size: 13px; padding: 5px 10px; border: 1px solid #ccc; border-radius: 5px; background: #fff; cursor: pointer; }
+
+.pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.pill { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+.pill.on { background: #111; color: #fff; border-color: #111; }
+
+.progress { font-size: 13px; color: #555; margin-bottom: 8px; }
+.bar-wrap { height: 4px; background: #ddd; border-radius: 2px; margin-bottom: 20px; }
+.bar { height: 100%; background: #111; border-radius: 2px; transition: width 0.3s; }
+
+.card-area { cursor: pointer; margin-bottom: 12px; }
+.card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  min-height: 200px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.card.back { text-align: left; align-items: flex-start; }
+.badge {
+  font-size: 11px; font-weight: bold; letter-spacing: 0.08em;
+  text-transform: uppercase; padding: 3px 10px; border-radius: 999px;
+  margin-bottom: 14px; border: 1px solid;
+}
+.badge.def { background: #e8f0ff; color: #1a4acc; border-color: #b3c8ff; }
+.badge.thm { background: #e8fff0; color: #1a7a40; border-color: #b3f0cc; }
+.badge.prf { background: #fff8e0; color: #8a5c00; border-color: #f0d87a; }
+.badge.warn { background: #fff0f0; color: #a02020; border-color: #f0b3b3; }
+.card-q { font-size: 18px; line-height: 1.5; max-width: 500px; }
+.hint { font-size: 13px; color: #aaa; margin-top: 14px; }
+.card-a { font-size: 14px; line-height: 1.75; width: 100%; }
+.card-a strong { font-weight: 600; }
+.card-a ul { padding-left: 20px; margin-top: 6px; }
+.card-a li { margin-bottom: 4px; }
+.card-a .block {
+  display: block; font-family: monospace; font-size: 12.5px;
+  background: #f4f4f4; border-left: 3px solid #888;
+  padding: 8px 12px; border-radius: 4px; margin: 8px 0;
+  white-space: pre-wrap; text-align: left;
+}
+
+.grade-row { display: flex; gap: 10px; margin-bottom: 24px; }
+.grade-row button {
+  flex: 1; padding: 10px; border-radius: 6px; border: 1px solid;
+  font-size: 14px; cursor: pointer;
+}
+.btn-no { background: #fff0f0; border-color: #e08080; color: #a02020; }
+.btn-yes { background: #f0fff4; border-color: #60c080; color: #1a6030; }
+
+.done { display: none; border: 1px solid #ddd; border-radius: 10px; background: #fff; padding: 40px; text-align: center; }
+.done .pct { font-size: 56px; font-weight: bold; margin-bottom: 6px; }
+.done p { color: #555; margin-bottom: 20px; }
+.done button { padding: 10px 28px; border-radius: 6px; border: 1px solid #111; background: #111; color: #fff; font-size: 14px; cursor: pointer; }
+
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
+.leg { font-size: 12px; color: #666; display: flex; align-items: center; gap: 5px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+</style>
+</head>
+<body>
+
+<h1>MATH0110 Flashcards</h1>
+<p class="sub">UCL Analysis for Joint Honours &mdash; click a card to flip</p>
+
+<div class="pill-row" id="pill-row"></div>
+
+<div class="filters">
+  <select id="type-sel">
+    <option value="all">All types</option>
+    <option value="def">Definitions</option>
+    <option value="thm">Theorems</option>
+    <option value="prf">Proof strategies</option>
+    <option value="warn">Watch-outs</option>
+  </select>
+  <button id="btn-shuffle">Shuffle</button>
+  <button id="btn-restart">Restart</button>
+</div>
+
+<div class="progress" id="progress">Card 1 of 1 &mdash; 0 correct</div>
+<div class="bar-wrap"><div class="bar" id="bar" style="width:0%"></div></div>
+
+<div class="card-area" id="card-area">
+  <div class="card" id="card-front">
+    <span class="badge def" id="f-badge">Definition</span>
+    <p class="card-q" id="f-q"></p>
+    <p class="hint">Space to flip &amp;nbsp;&middot;&nbsp; &larr; &rarr; to navigate</p>
+  </div>
+  <div class="card back" id="card-back" style="display:none">
+    <span class="badge def" id="b-badge">Definition</span>
+    <div class="card-a" id="b-a"></div>
+  </div>
+</div>
+
+<div class="grade-row" id="grade-row" style="display:none">
+  <button class="btn-no" id="btn-no">Need more practice</button>
+  <button class="btn-yes" id="btn-yes">Got it</button>
+</div>
+
+<div class="done" id="done-screen">
+  <div class="pct" id="done-pct">0%</div>
+  <h2>Session complete</h2>
+  <p id="done-msg">Keep going!</p>
+  <button id="btn-again">Go again</button>
+</div>
+
+<div class="legend">
+  <div class="leg"><span class="dot" style="background:#1a4acc"></span>Definition</div>
+  <div class="leg"><span class="dot" style="background:#1a7a40"></span>Theorem</div>
+  <div class="leg"><span class="dot" style="background:#8a5c00"></span>Proof strategy</div>
+  <div class="leg"><span class="dot" style="background:#a02020"></span>Watch-out</div>
+</div>
+
+<script>
+var CARDS = [
+  {cat:"Sup and Inf", type:"def", q:"State both conditions required for S = sup A.",
+   a:"<strong>S = sup A</strong> requires two things:<br>(i) S is an upper bound: for all a in A, a &le; S.<br>(ii) S is the smallest upper bound: if R is any upper bound then S &le; R.<br><br>Condition (ii) is equivalent to: for all eps &gt; 0, there exists a in A with a &gt; S minus eps."},
+
+  {cat:"Sup and Inf", type:"def", q:"What is the difference between a supremum and a maximum?",
+   a:"The <strong>supremum</strong> is the least upper bound and need not belong to A.<br>The <strong>maximum</strong> is the supremum when it actually belongs to A.<br><br>Example: sup(0,1) = 1 but 1 is not in (0,1), so max(0,1) does not exist."},
+
+  {cat:"Sup and Inf", type:"thm", q:"State the Completeness Axiom of the real numbers.",
+   a:"Every non-empty subset of R that is bounded above has a supremum in R.<br><br>This distinguishes R from Q. The set {x in Q : x squared less than 2} is bounded above in Q but has no supremum in Q."},
+
+  {cat:"Sup and Inf", type:"warn", q:"Is this equivalent to sup A = S? For all R at least S, R is an upper bound of A.",
+   a:"<strong>No.</strong> This only states that S is an upper bound. It says nothing about S being the <em>least</em> upper bound. Any number larger than sup A also satisfies this property. You need both conditions."},
+
+  {cat:"Sequences", type:"def", q:"State the epsilon-N definition of: the sequence (a_n) converges to L.",
+   a:"<span class='block'>For all eps &gt; 0, there exists N in N such that\nfor all n &ge; N:  |a_n - L| &lt; eps</span>The logical order is fixed: eps is given first, then you produce N. N may depend on eps."},
+
+  {cat:"Sequences", type:"def", q:"Define a monotone sequence. State all four variants.",
+   a:"(a_n) is <strong>increasing</strong> if a_{n+1} &ge; a_n, <strong>strictly increasing</strong> if a_{n+1} &gt; a_n.<br><strong>Decreasing</strong> if a_{n+1} &le; a_n, <strong>strictly decreasing</strong> if a_{n+1} &lt; a_n.<br><br>Monotone means either increasing or decreasing."},
+
+  {cat:"Sequences", type:"def", q:"What is a subsequence of (a_n)?",
+   a:"A sequence of the form (a_{n_k}) where n_1 &lt; n_2 &lt; n_3 &lt; ... is a strictly increasing sequence of natural numbers."},
+
+  {cat:"Sequences", type:"def", q:"State the definition of a_n diverging to positive infinity.",
+   a:"<span class='block'>For all M in R, there exists N in N such that\nfor all n &ge; N:  a_n &gt; M</span>Similarly a_n to minus infinity: for all M exists N with a_n &lt; M for n &ge; N."},
+
+  {cat:"Sequences", type:"thm", q:"State the Monotone Convergence Theorem.",
+   a:"If (a_n) is <strong>increasing and bounded above</strong>, it converges to sup{a_n}.<br>If (a_n) is increasing and unbounded above, it diverges to positive infinity.<br><br>Analogously for decreasing sequences."},
+
+  {cat:"Sequences", type:"thm", q:"State the Sandwich Theorem for sequences.",
+   a:"If c_n &le; a_n &le; d_n for all n, and lim c_n = lim d_n = L, then lim a_n = L."},
+
+  {cat:"Sequences", type:"thm", q:"State the theorem about subsequences of a convergent sequence.",
+   a:"If a_n converges to L, then <strong>every subsequence</strong> also converges to L.<br><br>Contrapositive: if two subsequences converge to different limits, the original sequence diverges."},
+
+  {cat:"Sequences", type:"thm", q:"State the Bolzano-Weierstrass theorem.",
+   a:"Every <strong>bounded</strong> sequence has a <strong>convergent subsequence</strong>.<br><br>Lemma used in the proof: every sequence has a monotone subsequence."},
+
+  {cat:"Sequences", type:"thm", q:"State Bernoulli's inequality.",
+   a:"For all x &ge; -1 and n in N:<span class='block'>(1+x)^n  &ge;  1 + nx</span>Proved by induction. Step: (1+x)^{n+1} = (1+x)^n (1+x) &ge; (1+nx)(1+x) = 1+(n+1)x+nx^2 &ge; 1+(n+1)x."},
+
+  {cat:"Sequences", type:"warn", q:"Statement D: for all eps > 0, (L-eps, L+eps) contains infinitely many terms. Is D equivalent to convergence to L?",
+   a:"<strong>No.</strong> D says the sequence visits the neighbourhood infinitely often but it may also leave infinitely often.<br><br>Counterexample: (-1)^n satisfies D for L=1 (the +1 terms are always inside) but the sequence diverges.<br><br>Statement E, that all but finitely many terms are inside, is the correct equivalent."},
+
+  {cat:"Sequences", type:"warn", q:"Does bounded imply convergent? Does convergent imply bounded?",
+   a:"<strong>Convergent implies bounded.</strong> Use this regularly in proofs.<br><br><strong>Bounded does NOT imply convergent.</strong> Counterexample: (-1)^n is bounded but diverges."},
+
+  {cat:"Series", type:"def", q:"Define convergence of the series sum of a_n.",
+   a:"Define partial sums S_n = a_0 + a_1 + ... + a_n. The series <strong>converges</strong> if (S_n) converges, i.e. there exists L with S_n &rarr; L. The value of the series is L."},
+
+  {cat:"Series", type:"def", q:"Distinguish absolute and conditional convergence.",
+   a:"<strong>Absolutely convergent:</strong> sum |a_n| converges. Absolute convergence implies convergence.<br><br><strong>Conditionally convergent:</strong> sum a_n converges but sum |a_n| diverges.<br><br>Classic example: sum (-1)^n / n is conditionally convergent."},
+
+  {cat:"Series", type:"thm", q:"State the Naive (Divergence) Test.",
+   a:"If lim a_n is not equal to 0, then sum a_n <strong>diverges</strong>.<br><br>Cannot be used to prove convergence. If lim a_n = 0 the series may still diverge, e.g. sum 1/n."},
+
+  {cat:"Series", type:"thm", q:"State the Alternating Series Test (AST). What makes it unique?",
+   a:"If a_n = (-1)^n b_n where b_n &ge; 0, lim b_n = 0, and (b_n) is decreasing, then sum a_n converges.<br><br>This is the <em>only</em> general test that establishes <strong>conditional</strong> convergence."},
+
+  {cat:"Series", type:"thm", q:"State the Basic Comparison Test (BCT).",
+   a:"Suppose 0 &le; a_n &le; b_n for all n.<ul><li>sum b_n converges implies sum a_n converges</li><li>sum a_n diverges implies sum b_n diverges</li></ul>Requires non-negative terms. For mixed signs, use absolute convergence test first."},
+
+  {cat:"Series", type:"thm", q:"State the Limit Comparison Test (LCT). When can it not be used?",
+   a:"If a_n, b_n &gt; 0 and lim b_n/a_n = C &gt; 0, then sum a_n converges if and only if sum b_n converges.<br><br><strong>Cannot use</strong> if the limit is 0, infinity, or does not exist."},
+
+  {cat:"Series", type:"thm", q:"State the Ratio Test. What is its limitation?",
+   a:"If a_n &gt; 0 and lim a_{n+1}/a_n = L:<ul><li>L &lt; 1 implies sum a_n converges</li><li>L &gt; 1 implies sum a_n diverges</li><li>L = 1: <strong>inconclusive</strong></li></ul>When L = 1, use BCT, LCT, or AST instead."},
+
+  {cat:"Series", type:"thm", q:"State the Tail of a Series theorem.",
+   a:"sum from n=1 to infinity of a_n converges if and only if sum from n=m to infinity of a_n converges, for any fixed m.<br><br>Convergence depends only on the tail. Finitely many initial terms are irrelevant."},
+
+  {cat:"Series", type:"thm", q:"State the Riemann Rearrangement theorem.",
+   a:"If sum a_n is <strong>conditionally convergent</strong>, its terms can be rearranged to converge to any value L in R, or to diverge to positive or negative infinity.<br><br>Consequence: the positive-term subseries diverges to positive infinity, the negative-term subseries to negative infinity."},
+
+  {cat:"Series", type:"thm", q:"What happens when you rearrange an absolutely convergent series?",
+   a:"Any rearrangement of an <strong>absolutely convergent</strong> series converges to the <strong>same sum</strong>.<br><br>Contrast with conditional convergence where rearrangement can change or destroy convergence."},
+
+  {cat:"Series", type:"def", q:"Define the radius of convergence R of a power series sum a_n x^n.",
+   a:"R is the value in [0, infinity] such that the series converges absolutely for |x| &lt; R and diverges for |x| &gt; R.<br><br>When the limit exists: R = lim |a_n| / |a_{n+1}|.<br><br>At the endpoints x = R and x = -R, you must test each separately."},
+
+  {cat:"Series", type:"warn", q:"When finding the interval of convergence, what must you always do after finding R?",
+   a:"Always <strong>test both endpoints x = R and x = -R separately</strong> by direct substitution.<br><br>The ratio test gives L = 1 at the endpoints, making it inconclusive there. Each endpoint may converge or diverge independently."},
+
+  {cat:"Limits", type:"def", q:"State the epsilon-delta definition of lim_{x to a} f(x) = L.",
+   a:"<span class='block'>For all eps &gt; 0, there exists delta &gt; 0 such that\n0 &lt; |x - a| &lt; delta  implies  |f(x) - L| &lt; eps</span>The strict 0 &lt; |x-a| means the value of f at x = a is completely ignored."},
+
+  {cat:"Limits", type:"def", q:"Define the right-hand and left-hand limits. When does the two-sided limit exist?",
+   a:"Right-hand limit lim_{x to a+} f(x) = L uses: 0 &lt; x - a &lt; delta.<br>Left-hand limit lim_{x to a-} f(x) = L uses: 0 &lt; a - x &lt; delta.<br><br>The two-sided limit exists if and only if both one-sided limits exist <em>and are equal</em>."},
+
+  {cat:"Limits", type:"thm", q:"State the sequential characterisation of limits.",
+   a:"lim_{x to c} f(x) = L if and only if: for every sequence (x_n) with x_n not equal to c and x_n &rarr; c, we have f(x_n) &rarr; L.<br><br>Use: to <em>disprove</em> a limit, find two sequences approaching c that give different values of f."},
+
+  {cat:"Limits", type:"thm", q:"State the composition of limits theorem (Version 1).",
+   a:"If lim_{x to c} g(x) = L and <strong>f is continuous at L</strong>, then:<span class='block'>lim_{x to c} f(g(x))  =  f( lim_{x to c} g(x) )  =  f(L)</span>"},
+
+  {cat:"Limits", type:"thm", q:"State the composition of limits theorem (Version 2).",
+   a:"If lim_{x to c} g(x) = L, g(x) is not equal to L for x near c (except possibly at c), and lim_{y to L} f(y) = M, then lim_{x to c} f(g(x)) = M.<br><br>Does not require f to be continuous at L."},
+
+  {cat:"Continuity", type:"def", q:"Define continuity of f at a. What three conditions are required?",
+   a:"f is <strong>continuous at a</strong> if lim_{x to a} f(x) = f(a). This requires:<ul><li>f(a) is defined</li><li>lim_{x to a} f(x) exists</li><li>They are equal</li></ul>Epsilon-delta form: for all eps &gt; 0, exists delta &gt; 0, |x-a| &lt; delta implies |f(x)-f(a)| &lt; eps."},
+
+  {cat:"Continuity", type:"warn", q:"What is the key difference between the epsilon-delta definitions of a limit and continuity?",
+   a:"For a <strong>limit</strong>: we require 0 &lt; |x - a| &lt; delta, so x = a is excluded.<br><br>For <strong>continuity</strong>: we require |x - a| &lt; delta, so x = a is included.<br><br>Continuity additionally requires f(a) to be defined and equal to the limit."},
+
+  {cat:"Continuity", type:"def", q:"Define continuity of f on a closed interval [a, b].",
+   a:"f is continuous on [a,b] if it is continuous at every interior point of (a,b), and additionally:<ul><li>lim_{x to a+} f(x) = f(a) (right-continuous at a)</li><li>lim_{x to b-} f(x) = f(b) (left-continuous at b)</li></ul>"},
+
+  {cat:"Continuity", type:"thm", q:"State the Intermediate Value Theorem (IVT).",
+   a:"If f is continuous on [a,b] and f(a) &lt; v &lt; f(b), or f(b) &lt; v &lt; f(a), then there exists c in (a,b) with f(c) = v.<br><br>Standard use: find points where f has opposite signs to prove existence of a root."},
+
+  {cat:"Continuity", type:"thm", q:"State the Extreme Value Theorem (EVT).",
+   a:"If f is continuous on [a,b], then f <strong>attains its maximum and minimum</strong> on [a,b].<br><br>There exist c, d in [a,b] with f(c) &le; f(x) &le; f(d) for all x in [a,b].<br><br>Used to prove Rolle: guarantees an interior extremum exists."},
+
+  {cat:"Continuity", type:"thm", q:"State the theorem about combining continuous functions.",
+   a:"If f and g are continuous at c, then so are f + g, f - g, alpha times f (any real alpha), f times g, and f/g provided g(c) is not zero."},
+
+  {cat:"Derivatives", type:"def", q:"State both equivalent definitions of the derivative f'(a).",
+   a:"<strong>Form 1:</strong><span class='block'>f'(a)  =  lim_{h to 0}  [f(a+h) - f(a)] / h</span><strong>Form 2:</strong><span class='block'>f'(a)  =  lim_{x to a}  [f(x) - f(a)] / (x - a)</span>Form 1 is usually best for computing. Form 2 is often cleaner in limit arguments."},
+
+  {cat:"Derivatives", type:"thm", q:"State and sketch the proof that differentiability implies continuity.",
+   a:"If f is differentiable at a, then f is continuous at a.<br><br>Proof sketch:<span class='block'>f(a+h) - f(a)  =  [f(a+h)-f(a)]/h  times  h\n                  &rarr;  f'(a) times 0  =  0</span>So f(a+h) &rarr; f(a), meaning f is continuous at a."},
+
+  {cat:"Derivatives", type:"def", q:"Define a local maximum of f at c.",
+   a:"f has a <strong>local maximum</strong> at c if there exists delta &gt; 0 such that |x - c| &lt; delta implies f(x) &le; f(c).<br><br>Local minimum: f(x) &ge; f(c) for all x near c."},
+
+  {cat:"Derivatives", type:"thm", q:"State the theorem linking local extrema and the derivative.",
+   a:"If f is defined on an open interval and c is an interior point where f has a local max or min, then <strong>either f'(c) = 0 or f'(c) does not exist</strong>.<br><br>Warning: f'(c) = 0 does NOT guarantee an extremum. Example: f(x) = x^3 at c = 0."},
+
+  {cat:"Derivatives", type:"thm", q:"State the First Derivative Test.",
+   a:"Let f be continuous at c and differentiable near c:<ul><li>f' positive left of c, negative right: <strong>local max</strong></li><li>f' negative left of c, positive right: <strong>local min</strong></li><li>f' does not change sign: <strong>no extremum</strong></li></ul>"},
+
+  {cat:"Derivatives", type:"thm", q:"State Rolle's Theorem.",
+   a:"If f is continuous on [a,b], differentiable on (a,b), and f(a) = f(b), then there exists c in (a,b) with f'(c) = 0.<br><br>Proof: EVT gives a max and min. If both are at endpoints, f is constant. Otherwise there is an interior extremum where f'(c) = 0."},
+
+  {cat:"Derivatives", type:"thm", q:"State the Mean Value Theorem (MVT).",
+   a:"If f is continuous on [a,b] and differentiable on (a,b), then there exists c in (a,b) with:<span class='block'>f'(c)  =  [f(b) - f(a)] / (b - a)</span>Proved by applying Rolle to H(x) = f(x) minus [(f(b)-f(a))/(b-a)](x-a)."},
+
+  {cat:"Derivatives", type:"thm", q:"State Cauchy's MVT. What is the key pitfall?",
+   a:"If f, g continuous on [a,b] and differentiable on (a,b), then exists c in (a,b) with:<span class='block'>[g(b)-g(a)] f'(c)  =  [f(b)-f(a)] g'(c)</span><strong>Pitfall:</strong> You cannot apply MVT to f and g separately. MVT gives a possibly different c for each. Cauchy applies Rolle to H(x) = f(x) minus M g(x) simultaneously."},
+
+  {cat:"Derivatives", type:"thm", q:"State the theorem relating a positive derivative to monotonicity.",
+   a:"If f is differentiable on (a,b), continuous on [a,b], and f'(x) &gt; 0 for all x in (a,b), then f is <strong>strictly increasing</strong> on [a,b].<br><br>Similarly f'(x) &lt; 0 implies f is strictly decreasing."},
+
+  {cat:"Inverses", type:"def", q:"Define the inverse function of f.",
+   a:"Let f map A to B. The inverse f^{-1} mapping B to A exists if and only if f is bijective. It satisfies: f^{-1}(y) = x if and only if f(x) = y."},
+
+  {cat:"Inverses", type:"thm", q:"State the Inverse Function Theorem.",
+   a:"If f has an inverse, is differentiable on an interval containing a, and f'(a) is not zero, then f^{-1} is differentiable at b = f(a) with:<span class='block'>(f^{-1})'(b)  =  1 / f'(a)  =  1 / f'(f^{-1}(b))</span>The condition f'(a) not equal to zero is essential."},
+
+  {cat:"Inverses", type:"thm", q:"If f is continuous on an interval and has an inverse, what can you conclude?",
+   a:"f must be <strong>strictly monotonic</strong> on that interval, either strictly increasing or strictly decreasing throughout.<br><br>Also: if f is continuous on its domain then f^{-1} is continuous on its domain."},
+
+  {cat:"Integration", type:"def", q:"Define upper and lower sums U(f,P) and L(f,P).",
+   a:"For partition P = {x_0, ..., x_n} of [a,b], let M_i = sup of f on [x_{i-1}, x_i] and m_i = inf of f on [x_{i-1}, x_i].<span class='block'>U(f,P)  =  sum of  M_i (x_i - x_{i-1})\nL(f,P)  =  sum of  m_i (x_i - x_{i-1})</span>"},
+
+  {cat:"Integration", type:"def", q:"Define Riemann integrability.",
+   a:"f is <strong>Riemann integrable</strong> on [a,b] if:<span class='block'>sup over P of L(f,P)  =  inf over P of U(f,P)</span>Equivalently: for all eps &gt; 0, there exists a partition P with U(f,P) minus L(f,P) &lt; eps."},
+
+  {cat:"Integration", type:"thm", q:"What happens to U(f,P) and L(f,P) when you add points to a partition?",
+   a:"Refining a partition (adding points):<ul><li><strong>Increases</strong> the lower sum L(f,P)</li><li><strong>Decreases</strong> the upper sum U(f,P)</li></ul>Also: L(f,P) &le; U(f,Q) for any two partitions P and Q, not just the same one."},
+
+  {cat:"Integration", type:"thm", q:"State the three main properties of the integral.",
+   a:"For integrable f and g on [a,b]:<ul><li><strong>Linearity:</strong> integral of (f+g) = integral of f plus integral of g</li><li><strong>Monotonicity:</strong> f &le; g implies integral of f &le; integral of g</li><li><strong>Additivity:</strong> integral from a to b = integral from a to c plus integral from c to b, for a &lt; c &lt; b</li></ul>"},
+
+  {cat:"Integration", type:"thm", q:"State FTC 1 and FTC 2.",
+   a:"<strong>FTC 1:</strong> If f is continuous on [a,b] and F(x) = integral from a to x of f(t) dt, then F'(x) = f(x).<br><br><strong>FTC 2:</strong> If f is continuous and F' = f, then:<span class='block'>integral from a to b of f(x) dx  =  F(b) - F(a)</span>"},
+
+  {cat:"Taylor Series", type:"def", q:"State the Taylor series of f centred at a.",
+   a:"<span class='block'>sum_{n=0}^{inf}  f^(n)(a)/n!  times  (x-a)^n\n  = f(a) + f'(a)(x-a) + f''(a)/2! (x-a)^2 + ...</span>The Maclaurin series is the special case a = 0."},
+
+  {cat:"Taylor Series", type:"def", q:"Define an analytic function. Why is being infinitely differentiable not sufficient?",
+   a:"f is <strong>analytic at a</strong> if it equals its own Taylor series in some open interval around a.<br><br>Being infinitely differentiable (C-infinity) is not enough. Example: f(x) = exp(-1/x^2) for x not 0 and f(0) = 0 has all derivatives zero at 0, so its Maclaurin series is identically 0, yet f(x) is not 0 for x not 0.<br><br>Analyticity is equivalent to R_n(x) &rarr; 0."},
+
+  {cat:"Taylor Series", type:"thm", q:"State Lagrange's Remainder theorem.",
+   a:"If f has n+1 continuous derivatives, then:<span class='block'>f(x) = sum_{k=0}^{n} f^(k)(a)/k! (x-a)^k  +  R_n(x)\nR_n(x)  =  f^{(n+1)}(c)/(n+1)!  times  (x-a)^{n+1}</span>for some c strictly between a and x. To show a Taylor series converges to f, show R_n(x) &rarr; 0."},
+
+  {cat:"Taylor Series", type:"def", q:"Give the Maclaurin series for e^x, sin x, and cos x.",
+   a:"<span class='block'>e^x  =  sum x^n / n!          for all x</span><span class='block'>sin x  =  sum (-1)^n x^{2n+1}/(2n+1)!   for all x</span><span class='block'>cos x  =  sum (-1)^n x^{2n}/(2n)!       for all x</span>"},
+
+  {cat:"Taylor Series", type:"def", q:"Give the Maclaurin series for ln(1+x) and 1/(1-x) with exact domains.",
+   a:"<span class='block'>ln(1+x)  =  sum (-1)^{n+1} x^n/n   for x in (-1, 1]</span><span class='block'>1/(1-x)  =  sum x^n               for |x| &lt; 1</span>For ln: x=1 converges by AST, x=-1 gives the harmonic series which diverges. For 1/(1-x): both endpoints diverge."},
+
+  {cat:"Proof Strategies", type:"prf", q:"What is the standard template for an epsilon-N sequence proof?",
+   a:"1. <strong>Fix</strong> eps &gt; 0. Never assign a specific value.<br>2. <strong>Scratch work:</strong> rearrange |a_n - L| &lt; eps to find what n must satisfy.<br>3. <strong>State</strong> N explicitly in terms of eps.<br>4. <strong>Fix</strong> n &ge; N and verify |a_n - L| &lt; eps rigorously.<br><br>Never work backwards in the write-up, only in scratch work."},
+
+  {cat:"Proof Strategies", type:"prf", q:"What is the standard template for an epsilon-delta limit proof?",
+   a:"1. Fix eps &gt; 0.<br>2. <strong>Scratch work:</strong> bound |f(x) - L| in terms of |x - a|. Often assume |x-a| &lt; 1 first to bound polynomial factors.<br>3. Choose delta = min(1, eps/C) where C comes from your bound.<br>4. Fix 0 &lt; |x-a| &lt; delta and verify |f(x) - L| &lt; eps."},
+
+  {cat:"Proof Strategies", type:"prf", q:"How do you prove a limit of a combination, e.g. lim(a_n - 2b_n) = L - 2M?",
+   a:"<strong>Budget your eps in advance.</strong><br>1. Get N_a so |a_n - L| &lt; eps/2 for n &ge; N_a.<br>2. Get N_b so |b_n - M| &lt; eps/4 for n &ge; N_b.<br>3. Take N = max(N_a, N_b). Then:<span class='block'>|(a_n - 2b_n) - (L - 2M)|  &le;  |a_n - L| + 2|b_n - M|\n                             &lt;  eps/2 + eps/2  =  eps</span>"},
+
+  {cat:"Proof Strategies", type:"prf", q:"How do you prove f'(x) from the definition when given a functional equation?",
+   a:"Write f'(x) = lim_{h to 0} [f(x+h) - f(x)] / h. Use the functional equation to simplify.<br><br>Key trick: if f(x_1 + x_2) = f(x_1)f(x_2), factor out f(x):<span class='block'>= lim [f(x)f(h) - f(x)] / h\n= f(x) times lim [f(h) - f(0)] / h\n= f(x) times f'(0)</span>"},
+
+  {cat:"Proof Strategies", type:"prf", q:"How do you prove a function has exactly k roots?",
+   a:"<strong>At least k roots:</strong> Apply IVT k times on k different intervals, finding a sign change at each.<br><br><strong>At most k roots:</strong> Apply Rolle. If f had k+1 roots, f' would need k roots by Rolle applied between consecutive ones. Show f' cannot have k roots, giving a contradiction."},
+
+  {cat:"Proof Strategies", type:"prf", q:"What is the Rolle scaffold for proving a theorem about two functions?",
+   a:"1. Define H(x) = f(x) minus M g(x).<br>2. Choose M so that <strong>H(a) = H(b)</strong>.<br>3. Verify H is continuous on [a,b] and differentiable on (a,b).<br>4. Apply Rolle: get c in (a,b) with H'(c) = 0.<br>5. Rearrange H'(c) = 0 to get the conclusion."},
+
+  {cat:"Proof Strategies", type:"prf", q:"How do you prove U(f,P) - L(f,P) < eps using a common refinement?",
+   a:"Let I be the integral.<br>1. Exists P_1 with U(f,P_1) &lt; I + eps/2.<br>2. Exists P_2 with L(f,P_2) &gt; I - eps/2.<br>3. Let P = P_1 union P_2 (common refinement). Refinement increases L and decreases U:<span class='block'>U(f,P) &le; U(f,P_1)  and  L(f,P) &ge; L(f,P_2)</span>So U(f,P) - L(f,P) &lt; eps."},
+
+  {cat:"Proof Strategies", type:"prf", q:"How do you approach an equivalent definition question?",
+   a:"If you think it <strong>IS equivalent</strong>: prove both directions, each implying the other. One direction is usually trivial.<br><br>If you think it is <strong>NOT equivalent</strong>: give one explicit counterexample that satisfies the candidate definition but violates the real one, or vice versa. State it clearly."},
+
+  {cat:"Proof Strategies", type:"warn", q:"Name five go-to counterexamples for analysis.",
+   a:"<ul><li><strong>(-1)^n</strong>: bounded, divergent, two subsequential limits</li><li><strong>1/n</strong>: a_n to 0, but sum 1/n diverges</li><li><strong>1/n^2</strong>: a_n to 0, and sum 1/n^2 converges</li><li><strong>|x|</strong>: continuous everywhere, not differentiable at 0</li><li><strong>x^3</strong>: f'(0) = 0, but no local extremum at 0</li></ul>"},
+
+  {cat:"Proof Strategies", type:"warn", q:"When applying MVT or Rolle in a proof, what must you always state?",
+   a:"Always verify all hypotheses explicitly:<ul><li>f is <strong>continuous on [a,b]</strong></li><li>f is <strong>differentiable on (a,b)</strong></li><li>For Rolle only: f(a) = f(b)</li></ul>Marks are routinely lost for applying these theorems without verifying hypotheses."}
+];
+
+var CATS = [];
+for (var i = 0; i < CARDS.length; i++) {
+  if (CATS.indexOf(CARDS[i].cat) < 0) CATS.push(CARDS[i].cat);
+}
+
+var activeCats = CATS.slice();
+var activeType = "all";
+var deck = [];
+var idx = 0;
+var correct = 0;
+var flipped = false;
+var finished = false;
+
+function typeLabel(t) {
+  if (t === "def") return "Definition";
+  if (t === "thm") return "Theorem";
+  if (t === "prf") return "Proof strategy";
+  return "Watch-out";
+}
+
+function buildDeck() {
+  deck = [];
+  for (var i = 0; i < CARDS.length; i++) {
+    var c = CARDS[i];
+    if (activeCats.indexOf(c.cat) >= 0 && (activeType === "all" || c.type === activeType)) {
+      deck.push(c);
+    }
+  }
+  if (deck.length === 0) deck = CARDS.slice();
+  idx = 0; correct = 0; finished = false;
+  showCard();
+}
+
+function showCard() {
+  flipped = false;
+  var cardFront = document.getElementById("card-front");
+  var cardBack  = document.getElementById("card-back");
+  var gradeRow  = document.getElementById("grade-row");
+  var doneScr   = document.getElementById("done-screen");
+  var cardArea  = document.getElementById("card-area");
+
+  if (finished) {
+    cardArea.style.display = "none";
+    gradeRow.style.display = "none";
+    doneScr.style.display = "block";
+    var pct = Math.round(correct / deck.length * 100);
+    document.getElementById("done-pct").textContent = pct + "%";
+    var msg = pct >= 90 ? "Outstanding." : pct >= 70 ? "Good work, a few more rounds and you will have it." : "Keep practising.";
+    document.getElementById("done-msg").textContent = msg;
+    updateBar();
+    return;
+  }
+
+  cardArea.style.display = "block";
+  doneScr.style.display = "none";
+  cardFront.style.display = "flex";
+  cardBack.style.display = "none";
+  gradeRow.style.display = "none";
+
+  var card = deck[idx];
+  var fBadge = document.getElementById("f-badge");
+  var bBadge = document.getElementById("b-badge");
+  fBadge.className = "badge " + card.type;
+  bBadge.className = "badge " + card.type;
+  fBadge.textContent = typeLabel(card.type);
+  bBadge.textContent = typeLabel(card.type);
+  document.getElementById("f-q").textContent = card.q;
+  document.getElementById("b-a").innerHTML = card.a;
+  updateBar();
+}
+
+function updateBar() {
+  var total = deck.length;
+  var prog = document.getElementById("progress");
+  var bar  = document.getElementById("bar");
+  if (finished) {
+    prog.textContent = total + " of " + total + " complete";
+    bar.style.width = "100%";
+  } else {
+    prog.textContent = "Card " + (idx + 1) + " of " + total + " \u2014 " + correct + " correct";
+    bar.style.width = Math.round(idx / total * 100) + "%";
+  }
+}
+
+function flipCard() {
+  if (finished) return;
+  flipped = !flipped;
+  document.getElementById("card-front").style.display = flipped ? "none" : "flex";
+  document.getElementById("card-back").style.display  = flipped ? "flex" : "none";
+  document.getElementById("grade-row").style.display  = flipped ? "flex" : "none";
+}
+
+function grade(ok) {
+  if (!flipped || finished) return;
+  if (ok) correct++;
+  idx++;
+  if (idx >= deck.length) finished = true;
+  showCard();
+}
+
+function prevCard() {
+  if (finished || idx <= 0) return;
+  idx--;
+  showCard();
+}
+
+function nextCard() {
+  if (finished) return;
+  idx++;
+  if (idx >= deck.length) { finished = true; }
+  showCard();
+}
+
+document.addEventListener("keydown", function(e) {
+  if (e.target.tagName === "SELECT") return;
+  if (e.key === " " || e.code === "Space") {
+    e.preventDefault();
+    flipCard();
+  } else if (e.key === "ArrowRight") {
+    e.preventDefault();
+    nextCard();
+  } else if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    prevCard();
+  }
+});
+
+function doShuffle() {
+  for (var i = deck.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
+  }
+  idx = 0; correct = 0; finished = false;
+  showCard();
+}
+
+// Wire up buttons (no onclick attributes in HTML)
+document.getElementById("card-area").addEventListener("click", flipCard);
+document.getElementById("btn-no").addEventListener("click", function() { grade(false); });
+document.getElementById("btn-yes").addEventListener("click", function() { grade(true); });
+document.getElementById("btn-shuffle").addEventListener("click", doShuffle);
+document.getElementById("btn-restart").addEventListener("click", buildDeck);
+document.getElementById("btn-again").addEventListener("click", buildDeck);
+document.getElementById("type-sel").addEventListener("change", function() {
+  activeType = this.value;
+  buildDeck();
+});
+
+// Build category pills
+var pillRow = document.getElementById("pill-row");
+var allPill = document.createElement("button");
+allPill.className = "pill on";
+allPill.textContent = "All topics";
+pillRow.appendChild(allPill);
+
+var catPills = [];
+for (var pi = 0; pi < CATS.length; pi++) {
+  (function(cat) {
+    var p = document.createElement("button");
+    p.className = "pill on";
+    p.textContent = cat;
+    p.addEventListener("click", function() {
+      var i = activeCats.indexOf(cat);
+      if (i >= 0) { activeCats.splice(i, 1); p.classList.remove("on"); }
+      else { activeCats.push(cat); p.classList.add("on"); }
+      allPill.classList.toggle("on", activeCats.length === CATS.length);
+      buildDeck();
+    });
+    pillRow.appendChild(p);
+    catPills.push(p);
+  })(CATS[pi]);
+}
+
+allPill.addEventListener("click", function() {
+  if (activeCats.length === CATS.length) {
+    activeCats = [];
+    catPills.forEach(function(p) { p.classList.remove("on"); });
+    allPill.classList.remove("on");
+  } else {
+    activeCats = CATS.slice();
+    catPills.forEach(function(p) { p.classList.add("on"); });
+    allPill.classList.add("on");
+  }
+  buildDeck();
+});
+
+buildDeck();
+</script>
+</body>
+</html>
